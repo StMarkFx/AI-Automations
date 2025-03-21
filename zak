@@ -1,0 +1,64 @@
+{
+    "name": "Enhanced Integrated Automation Workflow",
+    "nodes": [
+      {
+        "id": "1",
+        "name": "GoHighLevel Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [200, 300],
+        "parameters": {
+          "path": "gohighlevel-follow-up",
+          "method": "POST",
+          "responseMode": "onReceived",
+          "responseData": "firstEntryJson"
+        }
+      },
+      {
+        "id": "2",
+        "name": "Parse GoHighLevel Data",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [400, 300],
+        "parameters": {
+          "functionCode": "// Ensure we have valid data\nif (!items || !items.length || !items[0].json) {\n  return [{json: {error: 'Invalid input data'}}];\n}\n\nconst lead = items[0].json;\n\n// Input validation\nconst name = lead.name || 'Unknown';\nconst phone = lead.phone || '';\nconst email = lead.email || '';\nconst source = lead.source || 'GoHighLevel';\nconst timestamp = new Date().toISOString();\n\nreturn [{ \n  json: { \n    name, \n    phone, \n    email, \n    source,\n    timestamp,\n    leadId: `ghl-${Date.now()}-${Math.floor(Math.random() * 1000)}`\n  } \n}];"
+        }
+      },
+      {
+        "id": "3",
+        "name": "Format Lead Data",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [600, 300],
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "formattedName",
+                "value": "={{ $json[\"name\"].trim().split(' ')[0] }}"
+              },
+              {
+                "name": "formattedPhone",
+                "value": "={{ $json[\"phone\"].replace(/[^0-9]/g, '') }}"
+              },
+              {
+                "name": "leadId",
+                "value": "={{ $json[\"leadId\"] }}"
+              },
+              {
+                "name": "source",
+                "value": "={{ $json[\"source\"] }}"
+              },
+              {
+                "name": "email",
+                "value": "={{ $json[\"email\"].toLowerCase() }}"
+              },
+              {
+                "name": "timestamp",
+                "value": "={{ $json[\"timestamp\"] }}"
+              }
+            ]
+          }
+        }
+      },
