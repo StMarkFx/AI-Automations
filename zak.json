@@ -293,3 +293,13 @@
           "bodyParametersJson": "={ \"lastContact\": \"{{$json[\"timestamp\"]}}\", \"lastSource\": \"{{$json[\"source\"]}}\", \"message\": \"{{$json[\"message\"]}}\" }"
         }
       },
+      {
+        "id": "18",
+        "name": "Error Handler",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [1200, 500],
+        "parameters": {
+          "functionCode": "// Get error information\nconst error = items[0].json.error || 'Unknown error';\nconst timestamp = new Date().toISOString();\nconst nodeId = $node.id;\nconst workflowId = $workflow.id;\n\n// Log error\nconsole.error(`Error in node ${nodeId} at ${timestamp}: ${error}`);\n\n// Format error for notification\nreturn [{\n  json: {\n    error,\n    timestamp,\n    nodeId,\n    workflowId,\n    message: `Workflow error: ${error} at ${timestamp}`\n  }\n}];"
+        }
+      },
