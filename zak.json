@@ -303,3 +303,228 @@
           "functionCode": "// Get error information\nconst error = items[0].json.error || 'Unknown error';\nconst timestamp = new Date().toISOString();\nconst nodeId = $node.id;\nconst workflowId = $workflow.id;\n\n// Log error\nconsole.error(`Error in node ${nodeId} at ${timestamp}: ${error}`);\n\n// Format error for notification\nreturn [{\n  json: {\n    error,\n    timestamp,\n    nodeId,\n    workflowId,\n    message: `Workflow error: ${error} at ${timestamp}`\n  }\n}];"
         }
       },
+      {
+        "id": "19",
+        "name": "Send Error Notification",
+        "type": "n8n-nodes-base.sendEmail",
+        "typeVersion": 1,
+        "position": [1400, 500],
+        "parameters": {
+          "toEmail": "admin@yourcompany.com",
+          "subject": "=Workflow Error - {{ $json.nodeId }}",
+          "text": "=Error details:\n\nTimestamp: {{ $json.timestamp }}\nNode ID: {{ $json.nodeId }}\nWorkflow ID: {{ $json.workflowId }}\nError: {{ $json.error }}"
+        },
+        "credentials": {
+          "smtp": "smtp_credentials"
+        }
+      },
+      {
+        "id": "20",
+        "name": "Slack Alert for High-Value Leads",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [1400, 800],
+        "parameters": {
+          "channel": "new-leads",
+          "text": "=New Lead Alert!\nName: {{ $json.name }}\nEmail: {{ $json.email }}\nPhone: {{ $json.phone }}\nSource: {{ $json.source }}\nTimestamp: {{ $json.timestamp }}"
+        },
+        "credentials": {
+          "slackApi": "slack_credentials"
+        }
+      }
+    ],
+    "connections": {
+      "GoHighLevel Webhook": {
+        "main": [
+          [
+            {
+              "node": "Parse GoHighLevel Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse GoHighLevel Data": {
+        "main": [
+          [
+            {
+              "node": "Format Lead Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Lead Data": {
+        "main": [
+          [
+            {
+              "node": "Check Valid Phone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Valid Phone": {
+        "main": [
+          [
+            {
+              "node": "Trigger VAPI Outbound Call",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Error Handler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trigger VAPI Outbound Call": {
+        "main": [
+          [
+            {
+              "node": "Log Call Attempt",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "VAPI Inbound Call Webhook": {
+        "main": [
+          [
+            {
+              "node": "Parse Inbound Call Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Inbound Call Data": {
+        "main": [
+          [
+            {
+              "node": "Find Contact in CRM",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Contact in CRM": {
+        "main": [
+          [
+            {
+              "node": "Error Handler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Lead Form Webhook": {
+        "main": [
+          [
+            {
+              "node": "Parse Form Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Form Data": {
+        "main": [
+          [
+            {
+              "node": "De-duplicate Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "De-duplicate Check": {
+        "main": [
+          [
+            {
+              "node": "Is New Lead?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is New Lead?": {
+        "main": [
+          [
+            {
+              "node": "Send SMS to New Lead",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Email to New Lead",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Save to Database",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Update Existing Lead",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send SMS to New Lead": {
+        "main": [
+          [
+            {
+              "node": "Slack Alert for High-Value Leads",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Email to New Lead": {
+        "main": [
+          [
+            {
+              "node": "Error Handler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Handler": {
+        "main": [
+          [
+            {
+              "node": "Send Error Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+
+
+
