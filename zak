@@ -62,3 +62,95 @@
           }
         }
       },
+      {
+        "id": "4",
+        "name": "Check Valid Phone",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [800, 300],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json[\"formattedPhone\"].length }}",
+                "operation": "gte",
+                "value2": 10
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "5",
+        "name": "Trigger VAPI Outbound Call",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [1000, 200],
+        "parameters": {
+          "url": "https://api.vapi.ai/call",
+          "method": "POST",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "jsonParameters": true,
+          "options": {
+            "allowUnauthorizedCerts": false,
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "responseFormat": "json"
+              }
+            }
+          },
+          "bodyParametersJson": "={ \"phone\": \"{{$json[\"formattedPhone\"]}}\", \"message\": \"Hello {{$json[\"formattedName\"]}}, thank you for your interest. We will contact you shortly.\", \"leadId\": \"{{$json[\"leadId\"]}}\", \"source\": \"{{$json[\"source\"]}}\" }"
+        }
+      },
+      {
+        "id": "6",
+        "name": "Log Call Attempt",
+        "type": "n8n-nodes-base.spreadsheetFile",
+        "typeVersion": 1,
+        "position": [1200, 200],
+        "parameters": {
+          "options": {
+            "fileName": "call_logs.csv",
+            "writeMode": "append"
+          },
+          "fileFormat": "csv"
+        }
+      },
+      {
+        "id": "7",
+        "name": "VAPI Inbound Call Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [200, 500],
+        "parameters": {
+          "path": "vapi-inbound-call",
+          "method": "POST",
+          "responseMode": "onReceived",
+          "responseData": "firstEntryJson"
+        }
+      },
+      {
+        "id": "8",
+        "name": "Parse Inbound Call Data",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [400, 500],
+        "parameters": {
+          "functionCode": "// Ensure we have valid data\nif (!items || !items.length || !items[0].json) {\n  return [{json: {error: 'Invalid input data'}}];\n}\n\nconst callData = items[0].json;\n\n// Input validation and formatting\nconst callerId = callData.callerId || 'Unknown';\nconst formattedCallerId = callerId.replace(/[^0-9]/g, '');\nconst timestamp = callData.timestamp || new Date().toISOString();\nconst duration = callData.duration || 0;\nconst callStatus = callData.status || 'unknown';\n\nreturn [{ \n  json: { \n    callerId: formattedCallerId, \n    timestamp,\n    duration,\n    callStatus,\n    callId: `call-${Date.now()}-${Math.floor(Math.random() * 1000)}`\n  } \n}];"
+        }
+      },
+      {
+        "id": "9",
+        "name": "Find Contact in CRM",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [600, 500],
+        "parameters": {
+          "url": "=https://api.yourcrm.com/contacts?phone={{$json[\"callerId\"]}}",
+          "method": "GET",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth"
+        }
+      },
