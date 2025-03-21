@@ -154,3 +154,142 @@
           "genericAuthType": "httpHeaderAuth"
         }
       },
+      {
+        "id": "10",
+        "name": "Lead Form Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [200, 800],
+        "parameters": {
+          "path": "lead-form-submission",
+          "method": "POST",
+          "responseMode": "onReceived",
+          "responseData": "firstEntryJson"
+        }
+      },
+      {
+        "id": "11",
+        "name": "Parse Form Data",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [400, 800],
+        "parameters": {
+          "functionCode": "// Ensure we have valid data\nif (!items || !items.length || !items[0].json) {\n  return [{json: {error: 'Invalid input data'}}];\n}\n\nconst formData = items[0].json;\n\n// Input validation and sanitization\nconst name = (formData.name || '').trim() || 'Unknown';\nconst phone = (formData.phone || '').replace(/[^0-9]/g, '');\nconst email = ((formData.email || '').trim()).toLowerCase();\nconst source = formData.source || 'Web Form';\nconst message = formData.message || '';\nconst timestamp = new Date().toISOString();\n\nreturn [{ \n  json: { \n    name, \n    phone, \n    email,\n    source,\n    message,\n    timestamp,\n    leadId: `form-${Date.now()}-${Math.floor(Math.random() * 1000)}`\n  } \n}];"
+        }
+      },
+      {
+        "id": "12",
+        "name": "De-duplicate Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [600, 800],
+        "parameters": {
+          "url": "=https://api.yourcrm.com/contacts?email={{$json[\"email\"]}}",
+          "method": "GET",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth"
+        }
+      },
+      {
+        "id": "13",
+        "name": "Is New Lead?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [800, 800],
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.body ? JSON.parse($json.body).totalItems : 0 }}",
+                "operation": "equal",
+                "value2": "0"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "14",
+        "name": "Send SMS to New Lead",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [1000, 700],
+        "parameters": {
+          "url": "https://api.make.com/send-sms",
+          "method": "POST",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "jsonParameters": true,
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "responseFormat": "json"
+              }
+            }
+          },
+          "bodyParametersJson": "={ \"phone\": \"{{$json[\"phone\"]}}\", \"message\": \"Hello {{$json[\"name\"].split(' ')[0]}}, thank you for filling out our form. We will be in touch soon. Your reference ID is {{$json[\"leadId\"]}}\" }"
+        }
+      },
+      {
+        "id": "15",
+        "name": "Send Email to New Lead",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [1000, 900],
+        "parameters": {
+          "url": "https://api.make.com/send-email",
+          "method": "POST",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "jsonParameters": true,
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "responseFormat": "json"
+              }
+            }
+          },
+          "bodyParametersJson": "={ \"to\": \"{{$json[\"email\"]}}\", \"subject\": \"Thank You for Your Submission\", \"body\": \"Dear {{$json[\"name\"]}},\\n\\nThank you for reaching out to us. Your inquiry (ID: {{$json[\"leadId\"]}}) has been received and we will get back to you shortly.\\n\\nIn the meantime, you can learn more about our services at our website.\\n\\nBest regards,\\nYour Company\" }"
+        }
+      },
+      {
+        "id": "16",
+        "name": "Save to Database",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [1200, 800],
+        "parameters": {
+          "operation": "insert",
+          "table": "leads",
+          "columns": "name, email, phone, source, timestamp, lead_id",
+          "values": "={{ $json[\"name\"] }}, {{ $json[\"email\"] }}, {{ $json[\"phone\"] }}, {{ $json[\"source\"] }}, {{ $json[\"timestamp\"] }}, {{ $json[\"leadId\"] }}"
+        },
+        "credentials": {
+          "postgres": "postgres_credentials"
+        }
+      },
+      {
+        "id": "17",
+        "name": "Update Existing Lead",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [1000, 1000],
+        "parameters": {
+          "url": "=https://api.yourcrm.com/contacts/{{$json.body ? JSON.parse($json.body).items[0].id : 'unknown'}}",
+          "method": "PATCH",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "jsonParameters": true,
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "responseFormat": "json"
+              }
+            }
+          },
+          "bodyParametersJson": "={ \"lastContact\": \"{{$json[\"timestamp\"]}}\", \"lastSource\": \"{{$json[\"source\"]}}\", \"message\": \"{{$json[\"message\"]}}\" }"
+        }
+      },
