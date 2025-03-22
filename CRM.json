@@ -81,3 +81,280 @@
           300
         ]
       },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialName": "clearbitApiKey",
+          "resource": "person",
+          "operation": "enrichment",
+          "email": "={{$json[\"email\"]}}"
+        },
+        "name": "Enrich Contact Data",
+        "type": "n8n-nodes-base.clearbit",
+        "typeVersion": 1,
+        "position": [
+          900,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "fields": {
+            "values": [
+              {
+                "name": "firstName",
+                "value": "={{$node[\"Validate Form Data\"].json[\"firstName\"] || $node[\"Enrich Contact Data\"].json[\"name\"][\"givenName\"] || \"\"}}"
+              },
+              {
+                "name": "lastName",
+                "value": "={{$node[\"Validate Form Data\"].json[\"lastName\"] || $node[\"Enrich Contact Data\"].json[\"name\"][\"familyName\"] || \"\"}}"
+              },
+              {
+                "name": "email",
+                "value": "={{$node[\"Validate Form Data\"].json[\"email\"]}}"
+              },
+              {
+                "name": "company",
+                "value": "={{$node[\"Validate Form Data\"].json[\"company\"] || $node[\"Enrich Contact Data\"].json[\"employment\"][\"name\"] || \"\"}}"
+              },
+              {
+                "name": "jobTitle",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"employment\"][\"title\"] || \"\"}}"
+              },
+              {
+                "name": "phone",
+                "value": "={{$node[\"Validate Form Data\"].json[\"phone\"] || \"\"}}"
+              },
+              {
+                "name": "website",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"employment\"][\"domain\"] || \"\"}}"
+              },
+              {
+                "name": "industry",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"employment\"][\"sector\"] || \"\"}}"
+              },
+              {
+                "name": "leadSource",
+                "value": "={{$node[\"Validate Form Data\"].json[\"source\"] || \"Website\"}}"
+              },
+              {
+                "name": "message",
+                "value": "={{$node[\"Validate Form Data\"].json[\"message\"] || \"\"}}"
+              },
+              {
+                "name": "linkedinUrl",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"linkedin\"][\"handle\"] ? \"https://linkedin.com/in/\" + $node[\"Enrich Contact Data\"].json[\"linkedin\"][\"handle\"] : \"\"}}"
+              },
+              {
+                "name": "twitterUrl",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"twitter\"][\"handle\"] ? \"https://twitter.com/\" + $node[\"Enrich Contact Data\"].json[\"twitter\"][\"handle\"] : \"\"}}"
+              },
+              {
+                "name": "location",
+                "value": "={{($node[\"Enrich Contact Data\"].json[\"geo\"][\"city\"] || \"\") + ($node[\"Enrich Contact Data\"].json[\"geo\"][\"country\"] ? \", \" + $node[\"Enrich Contact Data\"].json[\"geo\"][\"country\"] : \"\")}}"
+              },
+              {
+                "name": "companySize",
+                "value": "={{$node[\"Enrich Contact Data\"].json[\"employment\"][\"employeeCount\"] || \"\"}}"
+              },
+              {
+                "name": "submissionDate",
+                "value": "={{$now}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Prepare Contact Data",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          1140,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialName": "hubspotApiKey",
+          "resource": "contact",
+          "operation": "upsert",
+          "email": "={{$json[\"email\"]}}",
+          "additionalFields": {
+            "properties": [
+              {
+                "property": "firstname",
+                "value": "={{$json[\"firstName\"]}}"
+              },
+              {
+                "property": "lastname",
+                "value": "={{$json[\"lastName\"]}}"
+              },
+              {
+                "property": "company",
+                "value": "={{$json[\"company\"]}}"
+              },
+              {
+                "property": "jobtitle",
+                "value": "={{$json[\"jobTitle\"]}}"
+              },
+              {
+                "property": "phone",
+                "value": "={{$json[\"phone\"]}}"
+              },
+              {
+                "property": "website",
+                "value": "={{$json[\"website\"]}}"
+              },
+              {
+                "property": "industry",
+                "value": "={{$json[\"industry\"]}}"
+              },
+              {
+                "property": "lead_source",
+                "value": "={{$json[\"leadSource\"]}}"
+              },
+              {
+                "property": "message",
+                "value": "={{$json[\"message\"]}}"
+              },
+              {
+                "property": "linkedinurl",
+                "value": "={{$json[\"linkedinUrl\"]}}"
+              },
+              {
+                "property": "twitterurl",
+                "value": "={{$json[\"twitterUrl\"]}}"
+              },
+              {
+                "property": "city",
+                "value": "={{$json[\"location\"]}}"
+              },
+              {
+                "property": "company_size",
+                "value": "={{$json[\"companySize\"]}}"
+              },
+              {
+                "property": "form_submission_date",
+                "value": "={{$json[\"submissionDate\"]}}"
+              },
+              {
+                "property": "lifecyclestage",
+                "value": "lead"
+              }
+            ]
+          }
+        },
+        "name": "Create/Update CRM Contact",
+        "type": "n8n-nodes-base.hubspot",
+        "typeVersion": 1,
+        "position": [
+          1380,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json[\"company\"]}}",
+                "operation": "isNotEmpty"
+              }
+            ]
+          }
+        },
+        "name": "Has Company?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          1620,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialName": "hubspotApiKey",
+          "resource": "company",
+          "operation": "upsert",
+          "name": "={{$json[\"company\"]}}",
+          "additionalFields": {
+            "properties": [
+              {
+                "property": "domain",
+                "value": "={{$json[\"website\"]}}"
+              },
+              {
+                "property": "industry",
+                "value": "={{$json[\"industry\"]}}"
+              },
+              {
+                "property": "numberofemployees",
+                "value": "={{$json[\"companySize\"]}}"
+              },
+              {
+                "property": "city",
+                "value": "={{$json[\"location\"]}}"
+              }
+            ]
+          }
+        },
+        "name": "Create/Update Company",
+        "type": "n8n-nodes-base.hubspot",
+        "typeVersion": 1,
+        "position": [
+          1840,
+          100
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialName": "hubspotApiKey",
+          "resource": "deal",
+          "operation": "create",
+          "stage": "appointmentscheduled",
+          "additionalFields": {
+            "properties": [
+              {
+                "property": "dealname",
+                "value": "={{$json[\"company\"] ? $json[\"company\"] + \" - New Lead\" : $json[\"firstName\"] + \" \" + $json[\"lastName\"] + \" - New Lead\"}}"
+              },
+              {
+                "property": "pipeline",
+                "value": "default"
+              },
+              {
+                "property": "dealstage",
+                "value": "qualifiedtobuy"
+              },
+              {
+                "property": "dealtype",
+                "value": "newbusiness"
+              },
+              {
+                "property": "lead_source",
+                "value": "={{$json[\"leadSource\"]}}"
+              }
+            ],
+            "associations": [
+              {
+                "type": "companies",
+                "id": "={{$node[\"Create/Update Company\"].json[\"id\"]}}"
+              },
+              {
+                "type": "contacts",
+                "id": "={{$node[\"Create/Update CRM Contact\"].json[\"id\"]}}"
+              }
+            ]
+          }
+        },
+        "name": "Create Deal",
+        "type": "n8n-nodes-base.hubspot",
+        "typeVersion": 1,
+        "position": [
+          2060,
+          100
+        ]
+      },
