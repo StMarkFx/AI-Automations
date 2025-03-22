@@ -1,0 +1,83 @@
+{
+    "name": "Web Form to CRM Integration",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "form-submission",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          240,
+          300
+        ],
+        "webhookId": "web-form-submission"
+      },
+      {
+        "parameters": {
+          "filters": {},
+          "options": {
+            "validateFields": true
+          },
+          "schema": {
+            "type": "object",
+            "required": [
+              "email",
+              "firstName"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "firstName": {
+                "type": "string"
+              },
+              "lastName": {
+                "type": "string"
+              },
+              "company": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "name": "Validate Form Data",
+        "type": "n8n-nodes-base.functionItem",
+        "typeVersion": 1,
+        "position": [
+          460,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json[\"email\"]}}",
+                "operation": "isNotEmpty"
+              }
+            ]
+          }
+        },
+        "name": "Valid Email?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          680,
+          300
+        ]
+      },
