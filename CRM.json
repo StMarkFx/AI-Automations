@@ -545,3 +545,134 @@
           "mongoDb": "mongoDbCredentials"
         }
       },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "submissionId",
+                "value": "={{$node[\"MongoDB - Log Submission\"].json[\"insertedId\"]}}"
+              }
+            ],
+            "boolean": [
+              {
+                "name": "success",
+                "value": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Prepare Success Response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [
+          3160,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "respondWithText": true,
+          "responseText": "={\n  \"success\": true,\n  \"message\": \"Thank you for your submission. We'll be in touch soon!\",\n  \"submissionId\": \"{{$json[\"submissionId\"]}}\"\n}",
+          "options": {}
+        },
+        "name": "Success Response",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [
+          3380,
+          180
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json[\"leadSource\"]}}",
+                "value2": "high-value-page",
+                "operation": "isEqualTo"
+              }
+            ]
+          }
+        },
+        "name": "Is High-Value Lead?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          2720,
+          380
+        ]
+      },
+      {
+        "parameters": {
+          "toNumbers": "=[\"+1{{$node[\"Prepare Contact Data\"].json[\"salesRepPhone\"]}}\"]",
+          "fromNumber": "+15551234567",
+          "message": "=🔔 High-Value Lead Alert!\n\nName: {{$json[\"firstName\"]}} {{$json[\"lastName\"]}}\nCompany: {{$json[\"company\"]}}\nEmail: {{$json[\"email\"]}}\n\nPlease follow up ASAP."
+        },
+        "name": "Send SMS Alert",
+        "type": "n8n-nodes-base.twilio",
+        "typeVersion": 1,
+        "position": [
+          2940,
+          380
+        ],
+        "credentials": {
+          "twilioApi": "twilioApiCredentials"
+        }
+      }
+    ],
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Validate Form Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Form Data": {
+        "main": [
+          [
+            {
+              "node": "Valid Email?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Valid Email?": {
+        "main": [
+          [
+            {
+              "node": "Enrich Contact Data",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Error Handler",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enrich Contact Data": {
+        "main": [
+          [
+            {
+              "node": "Prepare Contact Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
