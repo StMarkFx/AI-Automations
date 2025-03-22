@@ -676,3 +676,179 @@
           ]
         ]
       },
+      "Prepare Contact Data": {
+        "main": [
+          [
+            {
+              "node": "Create/Update CRM Contact",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create/Update CRM Contact": {
+        "main": [
+          [
+            {
+              "node": "Has Company?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Company?": {
+        "main": [
+          [
+            {
+              "node": "Create/Update Company",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Create Deal (No Company)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create/Update Company": {
+        "main": [
+          [
+            {
+              "node": "Create Deal",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Deal": {
+        "main": [
+          [
+            {
+              "node": "Send Welcome Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Deal (No Company)": {
+        "main": [
+          [
+            {
+              "node": "Send Welcome Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Welcome Email": {
+        "main": [
+          [
+            {
+              "node": "Create Follow-up Task",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Follow-up Task": {
+        "main": [
+          [
+            {
+              "node": "Send Slack Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Error Handler": {
+        "main": [
+          [
+            {
+              "node": "Error Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Slack Notification": {
+        "main": [
+          [
+            {
+              "node": "MongoDB - Log Submission",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Is High-Value Lead?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MongoDB - Log Submission": {
+        "main": [
+          [
+            {
+              "node": "Prepare Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Success Response": {
+        "main": [
+          [
+            {
+              "node": "Success Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is High-Value Lead?": {
+        "main": [
+          [
+            {
+              "node": "Send SMS Alert",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      }
+    },
+    "active": true,
+    "settings": {
+      "executionOrder": "v1",
+      "saveManualExecutions": true,
+      "callerPolicy": "workflowsFromSameOwner",
+      "errorWorkflow": "1234abcd-5678-efgh-ijkl-9101112mnop"
+    },
+    "tags": [
+      "crm",
+      "lead-generation",
+      "form-handling"
+    ],
+    "pinData": {},
+    "versionId": "87a826b3-4c77-4486-b5ba-7c4372d37b2d",
+    "triggerCount": 1,
+    "staticData": null
+  }
