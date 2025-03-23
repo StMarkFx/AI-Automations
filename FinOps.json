@@ -1,0 +1,89 @@
+{
+    "name": "Financial Operations Workflow",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "days",
+                "triggerAtNumber": 1
+              }
+            ]
+          }
+        },
+        "name": "Daily Financial Processing",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [
+          240,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM pending_invoices WHERE due_date <= CURRENT_DATE + INTERVAL '7 days' AND status = 'DRAFT'",
+          "additionalFields": {}
+        },
+        "name": "Get Pending Invoices",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          460,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "iterateAll",
+          "batchSize": 5,
+          "options": {}
+        },
+        "name": "Process Each Invoice",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 1,
+        "position": [
+          680,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Generate invoice number\nconst prefix = \"INV\";\nconst date = new Date();\nconst year = date.getFullYear().toString().substr(-2);\nconst month = (date.getMonth() + 1).toString().padStart(2, '0');\nconst day = date.getDate().toString().padStart(2, '0');\nconst randomId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');\n\n// Create invoice number\nconst invoiceNumber = `${prefix}-${year}${month}${day}-${randomId}`;\n\n// Calculate tax amount\nconst subtotal = $input.item.json.amount;\nconst taxRate = 0.1; // 10% tax\nconst taxAmount = subtotal * taxRate;\nconst total = subtotal + taxAmount;\n\n// Add to the item\n$input.item.json.invoiceNumber = invoiceNumber;\n$input.item.json.taxAmount = taxAmount;\n$input.item.json.total = total;\n$input.item.json.generatedDate = date.toISOString();\n$input.item.json.dueDate = new Date(date.setDate(date.getDate() + 30)).toISOString(); // Due in 30 days\n\nreturn $input.item;"
+        },
+        "name": "Generate Invoice Details",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 1,
+        "position": [
+          900,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "templateId": "=invoice_template_{{$json[\"client_type\"]}}",
+          "options": {}
+        },
+        "name": "Generate PDF Invoice",
+        "type": "n8n-nodes-base.pdfjsNode",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "operation": "executeQuery",
+          "query": "=UPDATE pending_invoices SET status = 'SENT', invoice_number = '{{$json[\"invoiceNumber\"]}}', generated_date = '{{$json[\"generatedDate\"]}}' WHERE id = {{$json[\"id\"]}}"
+        },
+        "name": "Update Invoice Status",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1340,
+          180
+        ]
+      },
