@@ -287,3 +287,207 @@
           780
         ]
       },
+      {
+        "parameters": {
+          "fromEmail": "=expenses@company.com",
+          "toEmail": "={{$json[\"approver_email\"]}}",
+          "subject": "=Expense Report Approval - {{$json[\"employee_name\"]}} - ${{$json[\"amount\"]}}",
+          "text": "=Hello {{$json[\"approver_name\"]}},\n\nAn expense report requires your approval:\n\n- Employee: {{$json[\"employee_name\"]}}\n- Department: {{$json[\"department\"]}}\n- Amount: ${{$json[\"amount\"]}}\n- Date Submitted: {{new Date($json[\"submission_date\"]).toLocaleDateString()}}\n- Purpose: {{$json[\"purpose\"]}}\n\nPlease approve or reject this expense by clicking one of the following links:\n\n[APPROVE](https://company-portal.com/approve-expense?id={{$json[\"id\"]}}&token={{$json[\"security_token\"]}})\n\n[REJECT](https://company-portal.com/reject-expense?id={{$json[\"id\"]}}&token={{$json[\"security_token\"]}})\n\nThank you,\nExpense Management System",
+          "options": {}
+        },
+        "name": "Send Approval Request",
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          700
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "genericCredentialType",
+          "url": "=https://company-api.com/expense-reports/{{$json[\"id\"]}}/status",
+          "method": "PUT",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "status",
+                "value": "auto_approved"
+              },
+              {
+                "name": "processed_date",
+                "value": "={{$now}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Auto-Approve Expense",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          860
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "=INSERT INTO payment_queue (employee_id, amount, purpose, approved_date, payment_status) VALUES ({{$json[\"employee_id\"]}}, {{$json[\"amount\"]}}, '{{$json[\"purpose\"]}}', '{{$now}}', 'QUEUED')",
+          "options": {}
+        },
+        "name": "Queue For Reimbursement",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1340,
+          860
+        ]
+      }
+    ],
+    "connections": {
+      "Daily Financial Processing": {
+        "main": [
+          [
+            {
+              "node": "Get Pending Invoices",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Pending Invoices": {
+        "main": [
+          [
+            {
+              "node": "Process Each Invoice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Each Invoice": {
+        "main": [
+          [
+            {
+              "node": "Generate Invoice Details",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Invoice Details": {
+        "main": [
+          [
+            {
+              "node": "Generate PDF Invoice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate PDF Invoice": {
+        "main": [
+          [
+            {
+              "node": "Update Invoice Status",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Invoice Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Invoice Status": {
+        "main": [
+          [
+            {
+              "node": "Send Invoice Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Invoice Email": {
+        "main": [
+          [
+            {
+              "node": "Send Invoice Notification",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Unreconciled Payments": {
+        "main": [
+          [
+            {
+              "node": "Get Bank Transactions",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Bank Transactions": {
+        "main": [
+          [
+            {
+              "node": "Reconcile Payments",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reconcile Payments": {
+        "main": [
+          [
+            {
+              "node": "Any Matched Payments?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Any Matched Payments?": {
+        "main": [
+          [
+            {
+              "node": "Update Payment Records",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Reconciliation Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Payment Records": {
+        "main": [
+          [
+            {
+              "node": "Send Reconciliation Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
