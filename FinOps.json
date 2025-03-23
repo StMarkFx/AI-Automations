@@ -491,3 +491,67 @@
           ]
         ]
       },
+      "Process Expense Reports": {
+        "main": [
+          [
+            {
+              "node": "Get Pending Expense Reports",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Pending Expense Reports": {
+        "main": [
+          [
+            {
+              "node": "Process Each Expense",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Each Expense": {
+        "main": [
+          [
+            {
+              "node": "Needs Approval?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Needs Approval?": {
+        "main": [
+          [
+            {
+              "node": "Send Approval Request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Auto-Approve Expense",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Auto-Approve Expense": {
+        "main": [
+          [
+            {
+              "node": "Queue For Reimbursement",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
