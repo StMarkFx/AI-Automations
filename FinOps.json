@@ -162,3 +162,128 @@
           540
         ]
       },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [],
+            "number": [
+              {
+                "value1": "={{$json[\"matched\"].length}}",
+                "operation": "notEqual",
+                "value2": 0
+              }
+            ]
+          }
+        },
+        "name": "Any Matched Payments?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          900,
+          540
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "=UPDATE payments SET status = 'RECONCILED', reconciled_date = '{{$json[\"reconciled_date\"]}}', transaction_id = '{{$json[\"transaction_id\"]}}' WHERE id = {{$json[\"payment_id\"]}}",
+          "options": {}
+        },
+        "name": "Update Payment Records",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          1120,
+          480
+        ]
+      },
+      {
+        "parameters": {
+          "channel": "#accounting",
+          "text": "=:white_check_mark: *Payment Reconciliation Complete*\n\n*Reconciled:* {{$node[\"Reconcile Payments\"].json[\"matched\"].length}} payments\n*Unmatched:* {{$node[\"Reconcile Payments\"].json[\"unmatched\"].length}} payments"
+        },
+        "name": "Send Reconciliation Report",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [
+          1340,
+          540
+        ]
+      },
+      {
+        "parameters": {
+          "triggerTimes": {
+            "item": [
+              {
+                "hour": 10,
+                "minute": 0
+              }
+            ]
+          },
+          "additionalFields": {
+            "cronExpression": "0 10 15,30 * *"
+          }
+        },
+        "name": "Process Expense Reports",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [
+          240,
+          780
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "genericCredentialType",
+          "url": "https://company-api.com/expense-reports?status=pending",
+          "options": {}
+        },
+        "name": "Get Pending Expense Reports",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          460,
+          780
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "iterateAll",
+          "batchSize": 5,
+          "options": {}
+        },
+        "name": "Process Each Expense",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 1,
+        "position": [
+          680,
+          780
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json[\"approver_email\"]}}",
+                "operation": "isNotEmpty"
+              }
+            ],
+            "number": [
+              {
+                "value1": "={{$json[\"amount\"]}}",
+                "operation": "smaller",
+                "value2": 1000
+              }
+            ]
+          },
+          "combineOperation": "and"
+        },
+        "name": "Needs Approval?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          900,
+          780
+        ]
+      },
