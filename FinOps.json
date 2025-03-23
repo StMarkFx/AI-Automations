@@ -87,3 +87,78 @@
           180
         ]
       },
+      {
+        "parameters": {
+          "fromEmail": "=accounting@company.com",
+          "toEmail": "={{$json[\"client_email\"]}}",
+          "subject": "=Invoice #{{$json[\"invoiceNumber\"]}} from Your Company",
+          "text": "=Dear {{$json[\"client_name\"]}},\n\nPlease find attached your invoice #{{$json[\"invoiceNumber\"]}} for ${{$json[\"total\"].toFixed(2)}}.\n\nInvoice Details:\n- Subtotal: ${{$json[\"amount\"].toFixed(2)}}\n- Tax (10%): ${{$json[\"taxAmount\"].toFixed(2)}}\n- Total: ${{$json[\"total\"].toFixed(2)}}\n- Due Date: {{new Date($json[\"dueDate\"]).toLocaleDateString()}}\n\nPayment Options:\n- Bank Transfer: ACC-123456789\n- Credit Card: Click the payment link in your client portal\n\nThank you for your business.\n\nRegards,\nAccounting Department\nYour Company",
+          "options": {
+            "attachments": [
+              {
+                "binary": "data"
+              }
+            ]
+          }
+        },
+        "name": "Send Invoice Email",
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 1,
+        "position": [
+          1340,
+          380
+        ]
+      },
+      {
+        "parameters": {
+          "channel": "#accounting",
+          "text": "=:page_facing_up: *New Invoice Generated*\n\n*Invoice #:* {{$json[\"invoiceNumber\"]}}\n*Client:* {{$json[\"client_name\"]}}\n*Amount:* ${{$json[\"total\"].toFixed(2)}}\n*Due Date:* {{new Date($json[\"dueDate\"]).toLocaleDateString()}}"
+        },
+        "name": "Send Invoice Notification",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [
+          1560,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT * FROM payments WHERE status = 'PENDING_RECONCILIATION'",
+          "additionalFields": {}
+        },
+        "name": "Get Unreconciled Payments",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 1,
+        "position": [
+          240,
+          540
+        ]
+      },
+      {
+        "parameters": {
+          "authentication": "predefinedCredentialType",
+          "operation": "list",
+          "version": "v2.0"
+        },
+        "name": "Get Bank Transactions",
+        "type": "n8n-nodes-base.paypal",
+        "typeVersion": 1,
+        "position": [
+          460,
+          540
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Match payments with bank transactions\nconst unreconciled = $node[\"Get Unreconciled Payments\"].json;\nconst transactions = $node[\"Get Bank Transactions\"].json;\n\nconst matched = [];\nconst unmatched = [];\n\n// Loop through each unreconciled payment\nfor (const payment of unreconciled) {\n  // Try to find matching transaction\n  const match = transactions.find(tx => {\n    // Match by amount and reference number\n    return tx.amount === payment.amount && \n           tx.reference.includes(payment.reference);\n  });\n  \n  if (match) {\n    matched.push({\n      payment_id: payment.id,\n      transaction_id: match.id,\n      amount: payment.amount,\n      status: 'RECONCILED',\n      reconciled_date: new Date().toISOString()\n    });\n  } else {\n    unmatched.push(payment);\n  }\n}\n\nreturn { matched, unmatched };"
+        },
+        "name": "Reconcile Payments",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 1,
+        "position": [
+          680,
+          540
+        ]
+      },
