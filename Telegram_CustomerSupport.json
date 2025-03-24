@@ -234,3 +234,12 @@
         ]
       }
     },
+    "settings": {
+      "saveManualExecutions": true,
+      "executionOrder": "v1",
+      "timezone": "UTC"
+    },
+    "meta": {
+      "instanceId": "advanced-ai-agent-workflow"
+    }
+  }
