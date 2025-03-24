@@ -107,3 +107,130 @@
         "typeVersion": 1,
         "position": [1100, 300]
       },
+      {
+        "parameters": {
+          "analyticsConfig": {
+            "trackInteractions": true,
+            "sentimentAnalysis": true,
+            "performanceMetrics": true
+          }
+        },
+        "id": "analytics-tracker",
+        "name": "Interaction Analytics",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [1300, 300]
+      },
+      {
+        "parameters": {
+          "botToken": "{{$env.TELEGRAM_BOT_TOKEN}}",
+          "method": "sendMessage"
+        },
+        "id": "telegram-response",
+        "name": "Telegram Response",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1,
+        "position": [1500, 300]
+      },
+      {
+        "parameters": {
+          "operation": "executeFunction",
+          "functionCode": "// Fallback and error handling\nif (!$input.first().json.response) {\n  return {\n    json: {\n      error: true,\n      errorMessage: 'Unable to process request',\n      suggestedHelp: 'Could you rephrase or be more specific?'\n    }\n  };\n}\nreturn $input.first().json;"
+        },
+        "id": "error-handler",
+        "name": "Error Handler",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [1700, 300]
+      }
+    ],
+    "connections": {
+      "telegram-trigger": {
+        "main": [
+          [
+            {
+              "node": "message-preprocessor",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "message-preprocessor": {
+        "main": [
+          [
+            {
+              "node": "tool-selector",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "tool-selector": {
+        "main": [
+          [
+            {
+              "node": "productivity-integrations",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "productivity-integrations": {
+        "main": [
+          [
+            {
+              "node": "openai-reasoning",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "openai-reasoning": {
+        "main": [
+          [
+            {
+              "node": "security-module",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "security-module": {
+        "main": [
+          [
+            {
+              "node": "analytics-tracker",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "analytics-tracker": {
+        "main": [
+          [
+            {
+              "node": "telegram-response",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      },
+      "telegram-response": {
+        "main": [
+          [
+            {
+              "node": "error-handler",
+              "type": "main",
+              "output": 0
+            }
+          ]
+        ]
+      }
+    },
