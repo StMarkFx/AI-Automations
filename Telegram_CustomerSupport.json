@@ -1,0 +1,23 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "botToken": "{{$env.TELEGRAM_BOT_TOKEN}}"
+        },
+        "id": "telegram-trigger",
+        "name": "Telegram Trigger",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1,
+        "position": [100, 300]
+      },
+      {
+        "parameters": {
+          "operation": "executeFunction",
+          "functionCode": "// Preprocess and sanitize incoming message\nconst sanitizedMessage = $input.first().json.message.text.trim();\n\n// Detect language\nconst language = detectLanguage(sanitizedMessage);\n\n// Initial intent classification\nconst intent = classifyIntent(sanitizedMessage);\n\nreturn {\n  json: {\n    originalMessage: sanitizedMessage,\n    language: language,\n    intent: intent,\n    userId: $input.first().json.message.from.id\n  }\n};\n\n// Placeholder functions - replace with actual implementations\nfunction detectLanguage(text) {\n  // Use a language detection library or API\n  return 'en'; // Default to English\n}\n\nfunction classifyIntent(text) {\n  // Use NLP to classify intent\n  const intents = [\n    'web_search', 'calculate', 'convert_currency', \n    'get_weather', 'translate', 'schedule_task', \n    'code_help', 'general_query'\n  ];\n  // Simple logic - replace with ML model\n  return intents.find(intent => text.toLowerCase().includes(intent.replace('_', ' ')) ) || 'general_query';\n}"
+        },
+        "id": "message-preprocessor",
+        "name": "Message Preprocessor",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [300, 300]
+      },
