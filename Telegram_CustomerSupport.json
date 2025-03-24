@@ -21,3 +21,75 @@
         "typeVersion": 1,
         "position": [300, 300]
       },
+      {
+        "parameters": {
+          "functionCollection": [
+            {
+              "id": "web_search",
+              "operation": "httpRequest",
+              "apiEndpoint": "https://api.serpapi.com/search"
+            },
+            {
+              "id": "calculate",
+              "operation": "function",
+              "method": "mathEvaluation"
+            },
+            {
+              "id": "convert_currency",
+              "operation": "httpRequest",
+              "apiEndpoint": "https://api.exchangerate-api.com/v4/latest/USD"
+            },
+            {
+              "id": "get_weather",
+              "operation": "httpRequest",
+              "apiEndpoint": "https://api.openweathermap.org/data/2.5/weather"
+            },
+            {
+              "id": "translate",
+              "operation": "httpRequest",
+              "apiEndpoint": "https://translation.googleapis.com/language/translate/v2"
+            },
+            {
+              "id": "code_help",
+              "operation": "function",
+              "method": "codeInterpreter"
+            }
+          ]
+        },
+        "id": "tool-selector",
+        "name": "AI Agent Tools",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [500, 300]
+      },
+      {
+        "parameters": {
+          "operations": [
+            "googleCalendar",
+            "notion",
+            "trello",
+            "slack",
+            "github"
+          ]
+        },
+        "id": "productivity-integrations",
+        "name": "Productivity Integrations",
+        "type": "n8n-nodes-base.multiWebhook",
+        "typeVersion": 1,
+        "position": [700, 300]
+      },
+      {
+        "parameters": {
+          "model": "gpt-4",
+          "temperature": 0.7,
+          "maxTokens": 500
+        },
+        "id": "openai-reasoning",
+        "name": "OpenAI Reasoning Engine",
+        "type": "n8n-nodes-base.openAI",
+        "typeVersion": 1,
+        "position": [900, 300],
+        "credentials": {
+          "openAIApi": "openai-credentials"
+        }
+      },
