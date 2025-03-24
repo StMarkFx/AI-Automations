@@ -93,3 +93,17 @@
           "openAIApi": "openai-credentials"
         }
       },
+      {
+        "parameters": {
+          "securityChecks": [
+            "userAuthentication",
+            "conversationLogging",
+            "privacyFiltering"
+          ]
+        },
+        "id": "security-module",
+        "name": "Security Validation",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [1100, 300]
+      },
