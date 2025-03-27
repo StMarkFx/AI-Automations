@@ -1,0 +1,124 @@
+{
+    "name": "UK TradieBot Workflow",
+    "nodes": [
+        {
+            "parameters": {
+                "botToken": "{{$credentials.telegramBot.token}}",
+                "updateType": "message"
+            },
+            "id": "2c2c9f86-1234-4567-89ab-cdef12345678",
+            "name": "Telegram Trigger",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "position": [100, 300],
+            "credentials": {
+                "telegramApi": "telegram-bot-credentials"
+            }
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": [
+                        {
+                            "value1": "={{$json.message.text}}",
+                            "operation": "contains"
+                        }
+                    ]
+                }
+            },
+            "id": "3d3d0f97-2345-6789-bcde-234567890abc",
+            "name": "Message Validator",
+            "type": "n8n-nodes-base.if",
+            "position": [300, 300]
+        },
+        {
+            "parameters": {
+                "operation": "spreadsheetId",
+                "spreadsheetId": "{{$credentials.googleSheets.spreadsheetId}}",
+                "range": "Jobs!A:Z"
+            },
+            "id": "4e4e1a08-3456-7890-cdef-345678901bcd",
+            "name": "Log to Google Sheets",
+            "type": "n8n-nodes-base.googleSheets",
+            "position": [500, 300],
+            "credentials": {
+                "googleSheets": "google-sheets-credentials"
+            }
+        },
+        {
+            "parameters": {
+                "method": "sendMessage",
+                "chatId": "={{$json.message.chat.id}}",
+                "text": "Request received and processing..."
+            },
+            "id": "5f5f2b19-4567-8901-defg-456789012cde",
+            "name": "Send Telegram Confirmation",
+            "type": "n8n-nodes-base.telegram",
+            "position": [250, 500],
+            "credentials": {
+                "telegramApi": "telegram-bot-credentials"
+            }
+        },
+        {
+            "parameters": {
+                "url": "https://api.stripe.com/v1/invoices",
+                "method": "POST",
+                "authentication": "predefinedCredentialType"
+            },
+            "id": "6g6g3c2a-5678-9012-efgh-567890123def",
+            "name": "Create Stripe Invoice",
+            "type": "n8n-nodes-base.httpRequest",
+            "position": [700, 300],
+            "credentials": {
+                "stripeApi": "stripe-credentials"
+            }
+        }
+    ],
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Message Validator",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Message Validator": {
+            "main": [
+                [
+                    {
+                        "node": "Send Telegram Confirmation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Log to Google Sheets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Telegram Confirmation": {
+            "main": [
+                [
+                    {
+                        "node": "Create Stripe Invoice",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "saveDataErrorExecution": "all",
+        "saveManualExecutions": true,
+        "timezone": "Europe/London"
+    },
+    "version": 1
+}
