@@ -190,3 +190,133 @@
         }
       }
     },
+    {
+      "parameters": {
+        "organizationId": "0ef864e8-65e7-4751-bb50-0025c078a74b",
+        "type": "ACCREC",
+        "contactId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_ID', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.xeroTool",
+      "typeVersion": 1,
+      "position": [
+        880,
+        220
+      ],
+      "id": "a0ca5c53-3375-48b2-819f-b296d1d086eb",
+      "name": "Xero",
+      "credentials": {
+        "xeroOAuth2Api": {
+          "id": "NhZcEiHkk3gq2Tcu",
+          "name": "Xero account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilioTool",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        220
+      ],
+      "id": "cab55fd7-3518-48af-b987-8e498952d595",
+      "name": "Twilio",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stripeTool",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "00a65f9f-2074-4245-bdf7-cea470dd15ab",
+      "name": "Stripe",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        220
+      ],
+      "id": "d2f72a18-12d0-42e5-910e-024b89198ad4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "mubxZWNTovgt8TUA",
+          "name": "OpenAi account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
