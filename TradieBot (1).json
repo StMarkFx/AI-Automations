@@ -1,0 +1,401 @@
+{
+  "name": "TradieBot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -60,
+        0
+      ],
+      "id": "497b3311-c744-4418-b1da-3225c23b15b1",
+      "name": "Telegram Trigger",
+      "webhookId": "38944440-9a79-41fc-93cb-8ebd4a372a5f",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ugy8GfDI2fQoCmpP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are TradieBot, an AI assistant for UK tradespeople (\"tradies\") to manage jobs efficiently via Telegram (@UKTradieBot). Your goal is to process commands in 90-120 seconds per job, handle multiple jobs without loops, and integrate with Google Sheets, Xero, PDFMonkey, Stripe, Twilio (WhatsApp), and Google Drive. You support multiple tradies, fetching their credentials (Xero, Stripe, Twilio) dynamically using their Telegram ID. Below are your functions and instructions.\n\n---\n\n### Core Functions\n\n1. **Invoicing**\n   - Command: \"Invoice [name] [amount] [job]\" (e.g., \"Invoice Susan £200 plumbing fix\")\n   - Steps:\n     - Parse input to extract `name`, `amount` (numeric, strip £), `job` (description).\n     - Assign a unique `Job ID` (e.g., #123, increment from last used in Google Sheets \"Jobs\" tab).\n     - Check state (Google Sheets \"State\" tab, `Telegram ID = chat.id`):\n       - If new, ask \"Customer email?\" and set state to `waiting_email` with data `{name, amount, job, job_id}`.\n       - On email reply (e.g., \"sue@email.com\"), update state to `waiting_costs` and ask \"Add job costs? (y/n)\".\n       - On \"Yes\", ask \"List costs (e.g., item:amount):\" (e.g., \"Pipe:£50, Tool:£20\").\n       - Parse costs, calculate total (`costs_sum`), ask \"Receipt? (y/n)\".\n       - On \"Yes\", wait for photo upload, store in Google Drive, get URL.\n       - Calculate `profit = amount - costs_sum`.\n       - Generate invoice PDF (PDFMonkey) with `name`, `amount`, `job`, Stripe link (no costs shown).\n       - Sync to Xero (amount, job description, email).\n       - Log to Google Sheets \"Jobs\" tab: `[job_id, name, amount, job, costs_sum, profit, receipt_url]`.\n       - Send WhatsApp update: \"Susan, invoice sent: [Stripe URL]\".\n       - Reply to tradie: \"Susan #123 invoiced, £130 profit, receipt saved.\"\n       - Clear state.\n\n2. **Quoting**\n   - Command: \"Quote [name] [amount] [job]\" (e.g., \"Quote Dave £150 tap fix\")\n   - Steps:\n     - Parse `name`, `amount`, `job`.\n     - Assign `Job ID`.\n     - Ask \"Customer email?\" if not in state, store in state (`waiting_email`).\n     - On email reply, generate quote PDF (PDFMonkey) with `name`, `amount`, `job`, Stripe link.\n     - Email PDF to customer (via tool or WhatsApp).\n     - Log to Google Sheets \"Jobs\" tab: `[job_id, name, amount, job, 0, 0, \"\"]`.\n     - Set state to `quote_sent`, schedule 3-day follow-up nudge (e.g., \"Chase Dave?\").\n     - Reply: \"Quote sent to Dave #124.\"\n\n3. **Scheduling**\n   - Command: \"Book [name] [date] [time]\" (e.g., \"Book Jane 15/03 10am\")\n   - Steps:\n     - Parse `name`, `date` (DD/MM format, assume current year unless specified), `time` (convert to 24h, e.g., \"10am\" → \"10:00\").\n     - Assign `Job ID`.\n     - Create Google Calendar event: title = \"Job for [name]\", start = parsed datetime, duration = 1 hour.\n     - Set 24-hour reminder.\n     - Log to Google Sheets \"Jobs\" tab: `[job_id, name, 0, \"Scheduled: [date] [time]\", 0, 0, \"\"]`.\n     - Reply: \"Jane #125 booked for 15/03 10:00, reminder set.\"\n\n4. **Chasing**\n   - Command: \"Chase [name]\" (e.g., \"Chase Bob\")\n   - Steps:\n     - Lookup `name` in Google Sheets \"Jobs\" tab for last quote/job.\n     - If found, reply: \"Text Bob £300 quote? (y/n)\" (use last amount).\n     - On \"Yes\", send WhatsApp: \"Bob, your £300 quote: [Stripe URL]\".\n     - Reply: \"Chase sent to Bob.\"\n\n5. **Bulk Invoicing**\n   - Command: \"Bulk invoice: [name1] [amount1] [job1], [name2] [amount2] [job2]\" (e.g., \"Bulk invoice: Sue £200 fix, Dave £150 taps\")\n   - Steps:\n     - Parse multiple jobs (split by commas, then extract `name`, `amount`, `job` per entry).\n     - For each job:\n       - Assign `Job ID`.\n       - Ask \"Customer emails? (e.g., sue@email.com, dave@email.com)\" if not in state.\n       - On reply, process in parallel:\n         - Generate PDF (PDFMonkey) with Stripe link.\n         - Sync to Xero.\n         - Log to Google Sheets \"Jobs\" tab (no costs yet).\n         - Send WhatsApp updates.\n       - Reply: \"Sue #126 and Dave #127 invoiced.\"\n\n6. **Status Check**\n   - Command: \"Status\"\n   - Steps:\n     - Query Google Sheets \"Jobs\" tab for active jobs (non-zero amount or scheduled, tied to `Telegram ID` via creds lookup).\n     - Format list: \"Susan #123: invoiced, Jane #125: booked\".\n     - Reply with list or \"No active jobs.\"\n\n---\n\n### Instructions\n\n- **Input Parsing**: Interpret natural language flexibly (e.g., \"invoice Susan 200 pounds for plumbing\" = \"Invoice Susan £200 plumbing fix\").\n- **State Management**: Use Google Sheets \"State\" tab (`Telegram ID`, `Job ID`, `State`, `Data`) to track progress (e.g., `waiting_email`, `waiting_costs`). Clear state after completion.\n- **Speed**: Avoid repeat prompts; use state to resume where left off. Process bulk jobs in parallel.\n- **Multi-User**: Fetch tradie credentials (Xero, Stripe, Twilio) from Google Sheets \"Tradie Creds\" tab using `Telegram ID` (`chat.id`).\n- **Responses**: Keep Telegram replies concise (e.g., \"Susan #123 invoiced, £130 profit\"). No unnecessary chatter.\n- **Tools**:\n  - Google Sheets: Log jobs, track state, lookup creds.\n  - Xero: Sync invoices (amount, job desc, email).\n  - PDFMonkey: Generate PDFs (invoice/quote, no costs shown).\n  - Stripe: Create payment links.\n  - Google Drive: Store receipt photos.\n  - Twilio (WhatsApp): Send client updates.\n  - Google Calendar: Schedule jobs + reminders.\n- **Error Handling**: If input is unclear, reply \"Sorry, try again (e.g., 'Invoice Susan £200 plumbing fix').\" and reset state if stalled.\n\n---\n\n### Example Flow\n**Input**: \"Invoice Susan £200 plumbing fix\"\n- Parse: `{command: \"Invoice\", name: \"Susan\", amount: 200, job: \"Plumbing fix\"}`\n- State: New → Ask \"Customer email?\"\n- Input: \"sue@email.com\"\n- State: `waiting_email` → Ask \"Add job costs? (y/n)\"\n- Input: \"Yes\"\n- State: `waiting_costs` → Ask \"List costs (e.g., item:amount):\"\n- Input: \"Pipe:£50, Tool:£20\"\n- State: `waiting_receipt` → Ask \"Receipt? (y/n)\"\n- Input: \"Yes\" + photo\n- Process: Upload photo, calculate profit (£130), generate PDF, sync Xero, log job, send WhatsApp.\n- Reply: \"Susan #123 invoiced, £130 profit, receipt saved.\"\n\n---\n\nAct decisively, call tools as needed, and keep the Telegram thread clean. Begin processing now."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        612,
+        0
+      ],
+      "id": "8d82c73d-4b1f-4ce1-8ae0-962ad842a34e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "2b6014b4-c5a3-47fb-a000-78bb2325d8fc",
+      "name": "Telegram",
+      "webhookId": "1ecda2d9-f087-4c78-9179-d88a22d41a93",
+      "credentials": {
+        "telegramApi": {
+          "id": "Ugy8GfDI2fQoCmpP",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id}}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        280,
+        220
+      ],
+      "id": "bbdd9930-2c0e-43e9-b453-1472316c9a71",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "adebayofolushohope@gmail.com",
+          "mode": "list",
+          "cachedResultName": "adebayofolushohope@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        220
+      ],
+      "id": "a57ec379-1da9-48ea-b4d3-fd4b22f8ecd0",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "egD6TxQGtF3hJzzs",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1SYDJV9ox6SBiEyrzXz5H2hRV5hkxHUYm9sNhFC86SV4/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SYDJV9ox6SBiEyrzXz5H2hRV5hkxHUYm9sNhFC86SV4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        520,
+        220
+      ],
+      "id": "c4ab532e-9b3a-455e-9c03-286d2a98bb93",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MrgdKUzRcyspC6f3",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        640,
+        220
+      ],
+      "id": "dead0723-8610-48fe-9ac6-de8188f71ef6",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "CWDuhDWejgLinfnk",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        220
+      ],
+      "id": "5d85e50e-d18a-44a3-8bc9-bc79072b6d29",
+      "name": "Gmail",
+      "webhookId": "6306d7bf-ec33-4c05-a86f-5900e2eb1c60",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "3ymLE54UGBrofo1t",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "organizationId": "0ef864e8-65e7-4751-bb50-0025c078a74b",
+        "type": "ACCREC",
+        "contactId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Contact_ID', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.xeroTool",
+      "typeVersion": 1,
+      "position": [
+        880,
+        220
+      ],
+      "id": "a0ca5c53-3375-48b2-819f-b296d1d086eb",
+      "name": "Xero",
+      "credentials": {
+        "xeroOAuth2Api": {
+          "id": "NhZcEiHkk3gq2Tcu",
+          "name": "Xero account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilioTool",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        220
+      ],
+      "id": "cab55fd7-3518-48af-b987-8e498952d595",
+      "name": "Twilio",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stripeTool",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "00a65f9f-2074-4245-bdf7-cea470dd15ab",
+      "name": "Stripe",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        220
+      ],
+      "id": "d2f72a18-12d0-42e5-910e-024b89198ad4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "mubxZWNTovgt8TUA",
+          "name": "OpenAi account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xero": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twilio": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "11dc6eae-6e0b-40b7-a1c4-7d7a24d40013",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63a9dfd89b07ad825ebac3d2f9218e7ec0f0913836e5a6f31776a01fe2d81b63"
+  },
+  "id": "glFizO48yd2KtT3E",
+  "tags": []
+}
