@@ -1,0 +1,673 @@
+{
+    "name": "Levi Cold Caller",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [3360, 960],
+        "id": "6cefe680-9b1b-44ec-8d3e-4f75c2024537",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "sheetId": "1fdZkRpZoQVszlaPREuxNoNqbxW5LNhTPhhbuBannEhU",
+          "range": "Sheet1!A:G",
+          "options": {}
+        },
+        "name": "Read Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [3580, 960],
+        "id": "c113637d-74c7-442b-92c1-7d42acbf6aa2",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "sheetId": "1queueSheetId123",
+          "range": "Sheet1!A:B",
+          "options": {}
+        },
+        "name": "Read Queue",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [3800, 960],
+        "id": "queue-read-id",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "{{ $node['Read Queue'].json['Status'] }}",
+                "operation": "equal",
+                "value2": "Pending"
+              }
+            ]
+          },
+          "options": {
+            "limit": 1
+          }
+        },
+        "name": "Filter Pending",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [4020, 960],
+        "id": "filter-pending-id"
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "phone",
+                "value": "{{ $node['Read Queue'].json['Phone'] }}"
+              },
+              {
+                "name": "name",
+                "value": "{{ $node['Read Google Sheets'].json['First Name'] }}"
+              },
+              {
+                "name": "address",
+                "value": "{{ $node['Read Google Sheets'].json['Office Address'] }}"
+              },
+              {
+                "name": "extraInfo",
+                "value": "{{ $node['Read Google Sheets'].json['Extra Info'] }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Set Lead Data",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [4240, 960],
+        "id": "b570628d-76dd-466f-9b4c-c206b7c7853f"
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "lookup",
+          "sheetId": "1rateLimitSheetId123",
+          "range": "Sheet1!A1",
+          "key": "LastCallTime",
+          "options": {}
+        },
+        "name": "Get Last Call Time",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [4460, 960],
+        "id": "rate-limit-read-id",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": "{{ Math.max(60 - (new Date().getTime() - ($node['Get Last Call Time'].json['LastCallTime'] || 0)) / 1000, 0) }}",
+          "unit": "seconds"
+        },
+        "name": "Rate Limit Wait",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1,
+        "position": [4680, 960],
+        "id": "rate-limit-wait-id"
+      },
+      {
+        "parameters": {
+          "operation": "getAll",
+          "calendar": {
+            "__rl": true,
+            "value": "3524b2651ff1eb066c21a939d88b39b2ea9e82dd09b001011fa1c97ad3ab6dd4@group.calendar.google.com",
+            "mode": "list",
+            "cachedResultName": "Inspection Appointments"
+          },
+          "returnAll": true,
+          "options": {
+            "timeMin": "{{ new Date().toISOString() }}",
+            "timeMax": "{{ new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() }}",
+            "singleEvents": true,
+            "orderBy": "startTime"
+          }
+        },
+        "name": "Check Calendar",
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1,
+        "position": [4900, 960],
+        "id": "54470ccf-b7a4-4a62-a6aa-d30ca1e14163",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "w6RmgsUVZuLY0TCM",
+            "name": "Google Calendar account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "keepOnlySet": true,
+          "values": {
+            "string": [
+              {
+                "name": "availableSlots",
+                "value": "{{ $node['Check Calendar'].json.length === 0 ? '2025-04-01T10:00:00Z,2025-04-01T14:00:00Z,2025-04-02T10:00:00Z' : Array.from({length: 14}, (_, i) => new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]).map(date => ['10:00', '14:00'].filter(time => !$node['Check Calendar'].json.some(e => e.start.includes(`${date}T${time}`))).map(time => `${date}T${time}:00Z`)).flat().slice(0, 3).join(',') }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "name": "Set Available Slots",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 1,
+        "position": [5120, 960],
+        "id": "64079a52-334e-4bb8-94e8-62dcdd7e56db"
+      },
+      {
+        "parameters": {
+          "authentication": "headerAuth",
+          "requestMethod": "POST",
+          "url": "https://api.vapi.ai/call",
+          "jsonParameters": true,
+          "options": {},
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "phoneNumber",
+                "value": "{{ $node['Set Lead Data'].json['phone'] }}"
+              },
+              {
+                "name": "assistantId",
+                "value": "your-vapi-assistant-id"
+              },
+              {
+                "name": "availableSlots",
+                "value": "{{ $node['Set Available Slots'].json['availableSlots'] }}"
+              },
+              {
+                "name": "serverUrl",
+                "value": "https://your-n8n-instance.app.n8n.cloud/webhook/vapi-response"
+              }
+            ]
+          }
+        },
+        "name": "VAPI Call",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [5340, 960],
+        "id": "51d69793-a3f1-4605-98ab-8ddcd3666566",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "FGA9PvrXNiW5mBM2",
+            "name": "Header Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "number": [
+              {
+                "value1": "{{ $node['VAPI Call'].json['status'] }}",
+                "operation": "equal",
+                "value2": 200
+              }
+            ]
+          }
+        },
+        "name": "Check Call Success",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [5560, 960],
+        "id": "check-call-success-id"
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "update",
+          "sheetId": "1queueSheetId123",
+          "range": "Sheet1!A:B",
+          "key": "Phone",
+          "options": {},
+          "updateValues": {
+            "values": [
+              {
+                "name": "Status",
+                "value": "Called"
+              }
+            ]
+          }
+        },
+        "name": "Update Queue Called",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [5780, 960],
+        "id": "update-queue-called-id",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "update",
+          "sheetId": "1rateLimitSheetId123",
+          "range": "Sheet1!A1",
+          "key": "LastCallTime",
+          "options": {},
+          "updateValues": {
+            "values": [
+              {
+                "name": "LastCallTime",
+                "value": "{{ new Date().getTime() }}"
+              }
+            ]
+          }
+        },
+        "name": "Update Last Call Time",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [6000, 960],
+        "id": "update-rate-limit-id",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "Error in Levi Cold Caller: VAPI Call failed - {{ $node['VAPI Call'].error.message }}"
+        },
+        "name": "Slack Error",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [5560, 1180],
+        "id": "slack-error-vapi-id",
+        "credentials": {
+          "slackApi": {
+            "id": "your-slack-cred-id",
+            "name": "Slack account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "path": "vapi-response",
+          "options": {}
+        },
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [3360, 1220],
+        "webhookId": "random-webhook-id",
+        "id": "b1bf1bca-a38a-4efb-9995-a9ceeb7d18e5"
+      },
+      {
+        "parameters": {
+          "maxTries": 3,
+          "waitBetweenTries": 5000
+        },
+        "name": "Retry Calendar",
+        "type": "n8n-nodes-base.retry",
+        "typeVersion": 1,
+        "position": [3580, 1220],
+        "id": "retry-calendar-id"
+      },
+      {
+        "parameters": {
+          "calendar": {
+            "__rl": true,
+            "value": "3524b2651ff1eb066c21a939d88b39b2ea9e82dd09b001011fa1c97ad3ab6dd4@group.calendar.google.com",
+            "mode": "list",
+            "cachedResultName": "Inspection Appointments"
+          },
+          "start": "{{ $node['Webhook'].json['appointmentTime'] }}",
+          "end": "=",
+          "additionalFields": {}
+        },
+        "name": "Google Calendar",
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1,
+        "position": [3800, 1220],
+        "id": "02fac8d5-67cf-4359-8d20-0fd520d9ea8a",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "w6RmgsUVZuLY0TCM",
+            "name": "Google Calendar account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "from": "+your-twilio-number",
+          "to": "{{ $node['Set Lead Data'].json['phone'] }}",
+          "message": "Hi {{ $node['Set Lead Data'].json['name'] }}, your roofing inspection for {{ $node['Set Lead Data'].json['address'] }} is set for {{ $node['Webhook'].json['appointmentTime'] }}. Reply to reschedule.",
+          "options": {}
+        },
+        "name": "Twilio SMS",
+        "type": "n8n-nodes-base.twilio",
+        "typeVersion": 1,
+        "position": [4020, 1220],
+        "id": "7a327375-eb7b-4441-960f-db90d72d129b",
+        "credentials": {
+          "twilioApi": {
+            "id": null,
+            "name": "your-twilio-credentials"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "update",
+          "sheetId": "1queueSheetId123",
+          "range": "Sheet1!A:B",
+          "key": "Phone",
+          "options": {},
+          "updateValues": {
+            "values": [
+              {
+                "name": "Status",
+                "value": "Booked"
+              }
+            ]
+          }
+        },
+        "name": "Update Queue Booked",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [4240, 1220],
+        "id": "update-queue-booked-id",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "oAuth2",
+          "operation": "update",
+          "sheetId": "1fdZkRpZoQVszlaPREuxNoNqbxW5LNhTPhhbuBannEhU",
+          "range": "Sheet1!A:G",
+          "key": "Phone Number",
+          "options": {}
+        },
+        "name": "Update Google Sheets",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 1,
+        "position": [4460, 1220],
+        "id": "2d7697dc-f1fc-4ab4-a099-d7d232724be9",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "14ztBCUJs7Oy8Q7T",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "Error in Levi Cold Caller: Calendar booking failed - {{ $node['Google Calendar'].error.message }}"
+        },
+        "name": "Slack Calendar Error",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [3800, 1440],
+        "id": "slack-error-calendar-id",
+        "credentials": {
+          "slackApi": {
+            "id": "your-slack-cred-id",
+            "name": "Slack account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "Read Google Sheets",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Read Queue",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Google Sheets": {
+        "main": [
+          []
+        ]
+      },
+      "Read Queue": {
+        "main": [
+          [
+            {
+              "node": "Filter Pending",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Pending": {
+        "main": [
+          [
+            {
+              "node": "Set Lead Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Lead Data": {
+        "main": [
+          [
+            {
+              "node": "Get Last Call Time",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Last Call Time": {
+        "main": [
+          [
+            {
+              "node": "Rate Limit Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Rate Limit Wait": {
+        "main": [
+          [
+            {
+              "node": "Check Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Calendar": {
+        "main": [
+          [
+            {
+              "node": "Set Available Slots",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Available Slots": {
+        "main": [
+          [
+            {
+              "node": "VAPI Call",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "VAPI Call": {
+        "main": [
+          [
+            {
+              "node": "Check Call Success",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Call Success": {
+        "main": [
+          [
+            {
+              "node": "Update Queue Called",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Slack Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Queue Called": {
+        "main": [
+          [
+            {
+              "node": "Update Last Call Time",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Last Call Time": {
+        "main": [
+          []
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Retry Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retry Calendar": {
+        "main": [
+          [
+            {
+              "node": "Google Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Slack Calendar Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Google Calendar": {
+        "main": [
+          [
+            {
+              "node": "Twilio SMS",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Twilio SMS": {
+        "main": [
+          [
+            {
+              "node": "Update Queue Booked",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Queue Booked": {
+        "main": [
+          [
+            {
+              "node": "Update Google Sheets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "6b707ee2-9f71-455e-8f5b-04048bf0e12c",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "2f7a6e48e9429d49a90e8b2000bd06eec935e20365406bddd23aaebc4905abc2"
+    },
+    "id": "yWCWcZ3dfK0R9P4C",
+    "tags": []
+  }
