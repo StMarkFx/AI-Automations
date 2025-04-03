@@ -1,0 +1,92 @@
+{
+    "name": "Poll Google Sheet and Trigger VAPI",
+    "nodes": [
+      {
+        "parameters": {
+          "interval": 30,
+          "unit": "minutes"
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1,
+        "position": [500, 300],
+        "name": "Every 30 Minutes"
+      },
+      {
+        "parameters": {
+          "operation": "lookup",
+          "sheetId": "YOUR_SHEET_ID",
+          "range": "A:G",
+          "options": {
+            "filters": {
+              "conditions": [
+                {
+                  "column": "Engagement Status",
+                  "value": "Not Called Yet",
+                  "operation": "equals"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 2,
+        "position": [700, 300],
+        "name": "Get Uncalled Rows",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "YOUR_GOOGLE_CRED_ID",
+            "name": "Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.vapi.ai/call",
+          "authentication": "headerAuth",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer YOUR_VAPI_API_KEY"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ { \"phoneNumber\": $json[\"Phone Number\"], \"firstName\": $json[\"First Name\"], \"assistantId\": \"YOUR_VAPI_ASSISTANT_ID\" } }}"
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [900, 300],
+        "name": "Trigger VAPI Call"
+      }
+    ],
+    "connections": {
+      "Every 30 Minutes": {
+        "main": [
+          [
+            {
+              "node": "Get Uncalled Rows",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Uncalled Rows": {
+        "main": [
+          [
+            {
+              "node": "Trigger VAPI Call",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {},
+    "id": "Poll-Google-Sheet-Trigger-VAPI"
+  }
