@@ -1,0 +1,172 @@
+{
+    "name": "TradieBot_Workflow",
+    "nodes": [
+      {
+        "parameters": {
+          "updates": [
+            {
+              "name": "Job ID",
+              "value": "={{$json[\"job_id\"]}}"
+            },
+            {
+              "name": "Name",
+              "value": "={{$json[\"name\"]}}"
+            },
+            {
+              "name": "Amount",
+              "value": "={{$json[\"amount\"]}}"
+            },
+            {
+              "name": "Job Description",
+              "value": "={{$json[\"job_description\"]}}"
+            },
+            {
+              "name": "Costs",
+              "value": "={{$json[\"costs\"]}}"
+            },
+            {
+              "name": "Profit",
+              "value": "={{$json[\"profit\"]}}"
+            },
+            {
+              "name": "Receipt URL",
+              "value": "={{$json[\"receipt_url\"]}}"
+            },
+            {
+              "name": "Status",
+              "value": "={{$json[\"status\"]}}"
+            }
+          ],
+          "authentication": "oAuth2",
+          "sheetId": "YOUR_GOOGLE_SHEETS_ID",
+          "range": "Jobs!A:H"
+        },
+        "name": "Update Jobs Sheet",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 2,
+        "position": [
+          600,
+          300
+        ],
+        "credentials": {
+          "googleSheetsOAuth2": "YOUR_GOOGLE_SHEETS_OAUTH2_CREDENTIALS"
+        }
+      },
+      {
+        "parameters": {
+          "from": "your_twilio_number",
+          "to": "={{$json[\"customer_phone\"]}}",
+          "message": "Your invoice has been generated. View it here: {{$json[\"invoice_url\"]}}"
+        },
+        "name": "Send Invoice via Twilio",
+        "type": "n8n-nodes-base.twilio",
+        "typeVersion": 2,
+        "position": [
+          800,
+          300
+        ],
+        "credentials": {
+          "twilioApi": "YOUR_TWILIO_CREDENTIALS"
+        }
+      },
+      {
+        "parameters": {
+          "operation": "create",
+          "amount": "={{$json[\"amount\"]}}",
+          "currency": "gbp",
+          "description": "={{$json[\"job_description\"]}}",
+          "customerEmail": "={{$json[\"customer_email\"]}}"
+        },
+        "name": "Create Stripe Invoice",
+        "type": "n8n-nodes-base.stripe",
+        "typeVersion": 2,
+        "position": [
+          400,
+          300
+        ],
+        "credentials": {
+          "stripeApi": "YOUR_STRIPE_API_KEY"
+        }
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "https://api.pdfmonkey.io/api/v1/documents",
+          "jsonParameters": true,
+          "options": {},
+          "bodyParametersJson": {
+            "document": {
+              "document_template_id": "YOUR_PDFMONKEY_TEMPLATE_ID",
+              "payload": {
+                "name": "={{$json[\"name\"]}}",
+                "amount": "={{$json[\"amount\"]}}",
+                "job_description": "={{$json[\"job_description\"]}}",
+                "stripe_link": "={{$json[\"stripe_link\"]}}"
+              }
+            }
+          },
+          "headers": {
+            "Authorization": "Bearer YOUR_PDFMONKEY_API_KEY",
+            "Content-Type": "application/json"
+          }
+        },
+        "name": "Generate Invoice PDF",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 2,
+        "position": [
+          200,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "background-task",
+          "responseMode": "onReceived",
+          "options": {}
+        },
+        "name": "Background Task Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          1000,
+          300
+        ]
+      }
+    ],
+    "connections": {
+      "Generate Invoice PDF": {
+        "main": [
+          [
+            {
+              "node": "Create Stripe Invoice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Stripe Invoice": {
+        "main": [
+          [
+            {
+              "node": "Update Jobs Sheet",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send Invoice via Twilio",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Background Task Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+  
