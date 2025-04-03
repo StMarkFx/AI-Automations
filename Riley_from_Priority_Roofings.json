@@ -1,0 +1,497 @@
+{
+  "name": "Riley from Priority Roofings",
+  "nodes": [
+    {
+      "parameters": {
+        "pollingInterval": 60,
+        "executeOnce": false,
+        "tableName": "Sheet1",
+        "idColumn": "row_number",
+        "documentId": {
+          "__rl": true,
+          "value": "184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k",
+          "mode": "list",
+          "cachedResultName": "Test Batch Calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit#gid=0"
+        },
+        "rowOffset": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "ff77123b-3fcb-46a8-83f9-398a767571ec",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "14ztBCUJs7Oy8Q7T",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "claims": {},
+          "options": {
+          "kid": "9e5623ab-3db8-4bd2-ae02-b3314231cc9a",
+          "algorithm": "HS256"
+        }
+          },
+      "type": "n8n-nodes-base.jwt",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "275472c0-50e6-4eb4-8304-e2f53dbaddf9",
+      "name": "JWT",
+      "credentials": {
+        "jwtAuth": {
+          "id": "VqSbhVlFwmSOFkcF",
+          "name": "JWT Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+      },
+          "conditions": [
+            {
+              "id": "8abd3e23-62e9-4f36-bb73-dc8cba914c5b",
+              "leftValue": "={{ $json.values['Phone Number'] }}",
+              "rightValue": "+1",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+    }
+            }
+  ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "b125bb41-a21b-49e9-b409-d72933bb8d54",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k",
+          "mode": "list",
+          "cachedResultName": "Test Batch Calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone Number": "={{ $json.values['Phone Number'] }}",
+            "Call Outcome": "Failed. Not US number"
+          },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+          {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Office Address",
+              "displayName": "Office Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+    },
+          {
+              "id": "Office Type",
+              "displayName": "Office Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+    },
+          {
+              "id": "Extra Info",
+              "displayName": "Extra Info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Engagement Status ",
+              "displayName": "Engagement Status ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+    },
+          {
+              "id": "Call Outcome",
+              "displayName": "Call Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+          }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+    },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        80
+      ],
+      "id": "6d620117-eb7c-4a14-b9ab-595e573253b7",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "14ztBCUJs7Oy8Q7T",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+          {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer  {{ $('JWT').item.json.token }}"
+            }
+        ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"99c000cd-ce5b-4b1c-b826-be300fd8a78e\",\n  \"customer\": {\n    \"number\": \"{{ $json.values['Phone Number'] }}\",\n    \"name\": \"{{ $json.values['First Name'] }}\"\n  },\n  \"phoneNumberId\": \"3c0ed681-8e6a-4c90-8db7-225997ed62a4\"\n} ",
+        "options": {}
+    },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        -140
+      ],
+      "name": "HTTP Request"
+    },
+          {
+      "parameters": {
+        "time": 1000
+    },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -200
+      ],
+      "name": "Rate Limiter",
+      "id": "rate-limiter"
+    },
+          {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k",
+          "mode": "list",
+          "cachedResultName": "Test Batch Calls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/184rVHmFIeBCS3-pcbaPh2nUxqe3wJ8Z7wGMq9B6v78k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Phone Number": "={{ $json.values['Phone Number'] }}",
+            "Call Outcome": "Success"
+    },
+          "matchingColumns": [
+            "Phone Number"
+          ],
+          "schema": [
+          {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Office Address",
+              "displayName": "Office Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+    },
+          {
+              "id": "Office Type",
+              "displayName": "Office Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Extra Info",
+              "displayName": "Extra Info",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+    },
+          {
+              "id": "Engagement Status ",
+              "displayName": "Engagement Status ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Call Outcome",
+              "displayName": "Call Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+    },
+          {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+          }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1100,
+        -40
+      ],
+      "id": "7bc08389-9e12-40a2-8c44-f525bf0b3ecd",
+      "name": "Update to Called",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "14ztBCUJs7Oy8Q7T",
+          "name": "Google Sheets account"
+        }
+      }
+  },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": $json.error.message, \"node\": $json.error.nodeName } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        600
+      ],
+      "name": "Error Response",
+      "id": "error-response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Add any required error handling here"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -260
+      ],
+      "name": "Catch Error",
+      "id": "catch-error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "JWT": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Rate Limiter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limiter": {
+      "main": [
+        [
+          {
+            "node": "Update to Called",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "JWT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "version": 1
+}
