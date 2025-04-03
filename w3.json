@@ -1,0 +1,135 @@
+{
+    "name": "Book Appointment Tool",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "book-appointment",
+          "responseMode": "responseNode"
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [500, 900],
+        "name": "Book Appointment Webhook"
+      },
+      {
+        "parameters": {
+          "operation": "create",
+          "calendarId": "primary",
+          "start": "={{ $json.selectedTime }}",
+          "end": "={{ DateTime.fromISO($json.selectedTime).plus({ minutes: 30 }).toISO() }}",
+          "summary": "={{ \"Appointment with \" + $json.firstName }}",
+          "description": "={{ \"Phone: \" + $json.phoneNumber }}"
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1,
+        "position": [700, 900],
+        "name": "Book Google Calendar",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "YOUR_GOOGLE_CRED_ID",
+            "name": "Google Calendar Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "from": "YOUR_TWILIO_NUMBER",
+          "to": "={{ $json.phoneNumber }}",
+          "message": "={{ \"Hi \" + $json.firstName + \", your appointment is booked for \" + new Date($json.selectedTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) + \".\" }}"
+        },
+        "type": "n8n-nodes-base.twilio",
+        "typeVersion": 1,
+        "position": [900, 900],
+        "name": "Send Confirmation",
+        "credentials": {
+          "twilioApi": {
+            "id": "YOUR_TWILIO_CRED_ID",
+            "name": "Twilio Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "sheetId": "YOUR_SHEET_ID",
+          "range": "A:G",
+          "key": "Phone Number",
+          "keyValue": "={{ $json.phoneNumber }}",
+          "value": {
+            "Engagement Status": "Called",
+            "Call Outcome": "={{ $json.selectedTime ? \"Appointment\" : \"No Appointment\" }}"
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 2,
+        "position": [1100, 900],
+        "name": "Update Google Sheet",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "YOUR_GOOGLE_CRED_ID",
+            "name": "Google Sheets Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"results\": [ { \"toolCallId\": $json.toolCallId, \"result\": \"Appointment booked for \" + new Date($json.selectedTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) } ] } }}"
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [1300, 900],
+        "name": "Confirm Booking to VAPI"
+      }
+    ],
+    "connections": {
+      "Book Appointment Webhook": {
+        "main": [
+          [
+            {
+              "node": "Book Google Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Book Google Calendar": {
+        "main": [
+          [
+            {
+              "node": "Send Confirmation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Confirmation": {
+        "main": [
+          [
+            {
+              "node": "Update Google Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Google Sheet": {
+        "main": [
+          [
+            {
+              "node": "Confirm Booking to VAPI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {},
+    "id": "Book-Appointment-Tool"
+  }
