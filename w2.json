@@ -1,0 +1,92 @@
+{
+    "name": "Check Availability Tool",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "check-availability",
+          "responseMode": "responseNode"
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [500, 600],
+        "name": "Check Availability Webhook"
+      },
+      {
+        "parameters": {
+          "operation": "freeBusy",
+          "calendarId": "primary",
+          "timeMin": "={{ new Date().toISOString() }}",
+          "timeMax": "={{ DateTime.now().plus({ days: 3 }).toISO() }}",
+          "timeZone": "America/Chicago"
+        },
+        "type": "n8n-nodes-base.googleCalendar",
+        "typeVersion": 1,
+        "position": [700, 600],
+        "name": "Check Google Calendar",
+        "credentials": {
+          "googleCalendarOAuth2Api": {
+            "id": "YOUR_GOOGLE_CRED_ID",
+            "name": "Google Calendar Account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const busyTimes = $input.first().json.busy || [];\nconst start = new Date();\nconst end = new Date(start.getTime() + 3 * 24 * 60 * 60 * 1000);\nconst slots = [];\nlet current = new Date(start.setHours(9, 0, 0, 0));\nwhile (current < end) {\n  const slotEnd = new Date(current.getTime() + 30 * 60 * 1000);\n  if (!busyTimes.some(b => new Date(b.start) < slotEnd && new Date(b.end) > current)) {\n    slots.push(current.toISOString());\n  }\n  current = slotEnd;\n}\nconst shuffled = slots.sort(() => Math.random() - 0.5).slice(0, 3);\nreturn [{ json: { availableSlots: shuffled.map(s => new Date(s).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })), rawSlots: shuffled } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [900, 600],
+        "name": "Process Slots"
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"results\": [ { \"toolCallId\": $json.toolCallId, \"result\": \"Available slots: \" + $json.availableSlots.join(', '), \"slots\": $json.rawSlots } ] } }}"
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [1100, 600],
+        "name": "Send Slots to VAPI"
+      }
+    ],
+    "connections": {
+      "Check Availability Webhook": {
+        "main": [
+          [
+            {
+              "node": "Check Google Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Google Calendar": {
+        "main": [
+          [
+            {
+              "node": "Process Slots",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Slots": {
+        "main": [
+          [
+            {
+              "node": "Send Slots to VAPI",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": true,
+    "settings": {},
+    "id": "Check-Availability-Tool"
+  }
