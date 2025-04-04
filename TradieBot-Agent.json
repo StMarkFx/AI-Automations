@@ -1,7 +1,5 @@
 {
-  "name": "TradieBot",
-  "nodes": [
-    {
+  "name": "
       "parameters": {
         "updates": [
           "message"
