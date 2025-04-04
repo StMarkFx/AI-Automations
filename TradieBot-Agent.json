@@ -1,10 +1,6 @@
 
       "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        -60,
-        0
-      ],
+      "typeVersion
       "id": "497b3311-c744-4418-b1da-3225c23b15b1",
       "name": "Telegram Trigger",
       "webhookId": "38944440-9a79-41fc-93cb-8ebd4a372a5f",
