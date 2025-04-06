@@ -1,12 +1,4 @@
-
-        0
-      ],
-      "id": "8d82c73d-4b1f-4ce1-8ae0-962ad842a34e",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
