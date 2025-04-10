@@ -1,16 +1,3 @@
-  {
-      "parameters": {
-        "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.message.chat.id}}",
-        "contextWindowLength": 15
-      },
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        280,
-        220
-      ],
-      "id": "bbdd9930-2c0e-43e9-b453-1472316c9a71",
       "name": "Simple Memory"
     },
     {
