@@ -1,17 +1,4 @@
-,
-        0
-      ],
-      "id": "2b6014b4-c5a3-47fb-a000-78bb2325d8fc",
-      "name": "Telegram",
-      "webhookId": "1ecda2d9-f087-4c78-9179-d88a22d41a93",
-      "credentials": {
-        "telegramApi": {
-          "id": "Ugy8GfDI2fQoCmpP",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
+  {
       "parameters": {
         "sessionIdType": "customKey",
         "sessionKey": "={{ $json.message.chat.id}}",
