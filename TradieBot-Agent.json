@@ -1,11 +1,4 @@
-": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "={{ $json.output }}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        1440,
+,
         0
       ],
       "id": "2b6014b4-c5a3-47fb-a000-78bb2325d8fc",
