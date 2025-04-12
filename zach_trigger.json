@@ -1,1 +1,24 @@
-1
+{
+  "name": "Riley Schedule Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -40
+      ],
+      "id": "35bd2ce2-cc56-4733-860f-b8ee58c6ba9c",
+      "name": "Schedule Trigger"
+    },
+    {
