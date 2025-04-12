@@ -22,3 +22,44 @@
       "name": "Schedule Trigger"
     },
     {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2821f87d-0df0-4ad8-819e-038af9852998",
+              "name": "ID",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e26e65ff-570d-4a1e-9e0d-72cda2d573e3",
+              "name": "First Name",
+              "value": "={{ $json['First Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "35f68617-b775-47da-8ebb-5b094ab81cc1",
+              "name": "Mobile",
+              "value": "={{ $json['Phone Number'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cb54ad4f-1479-4569-b0e9-5c61dd50c82c",
+              "name": "Address",
+              "value": "={{ $json['Office Address'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1fcc4dba-e953-407d-821d-a589632135c0",
+              "name": "Office Type",
+              "value": "={{ $json['Office Type'] }}",
+              "type": "string"
+            },
+            {
+              "id": "64d54b71-92d4-4db2-8da5-ee4a769db604",
+              "name": "Extra Info",
+              "value": "={{ $json['Extra Info'] }}",
+              "type": "string"
+            }
+          ]
+        },
