@@ -1588,3 +1588,612 @@
               }
             }
           ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        910
+      ],
+      "id": "c18018ed-50bd-48da-adcc-218ff741144d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE5y13csfXlZpzx",
+          "mode": "list",
+          "cachedResultName": "Free Inspection Booking",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbla2fmK5ZTEYEcuo",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx/tbla2fmK5ZTEYEcuo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.ID }}",
+            "Status": "Called",
+            "Summary": "={{ $json.Summary }}",
+            "Attempt": "#1"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Address",
+              "displayName": "Property Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Info",
+              "displayName": "Property Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "In-Progress",
+                  "value": "In-Progress"
+                },
+                {
+                  "name": "Failed",
+                  "value": "Failed"
+                },
+                {
+                  "name": "Called",
+                  "value": "Called"
+                },
+                {
+                  "name": "Voicemail",
+                  "value": "Voicemail"
+                },
+                {
+                  "name": "TBC",
+                  "value": "TBC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Appointment Booked",
+                  "value": "Appointment Booked"
+                },
+                {
+                  "name": "No Appointment",
+                  "value": "No Appointment"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Inspection Date",
+              "displayName": "Inspection Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attempt",
+              "displayName": "Attempt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "#1",
+                  "value": "#1"
+                },
+                {
+                  "name": "#2",
+                  "value": "#2"
+                },
+                {
+                  "name": "#3",
+                  "value": "#3"
+                },
+                {
+                  "name": "Unreachable",
+                  "value": "Unreachable"
+                },
+                {
+                  "name": "#Success",
+                  "value": "#Success"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Hope",
+              "displayName": "Last Hope",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        770,
+        1210
+      ],
+      "id": "fbc87f4f-acff-413c-a319-9d3d0cd052f1",
+      "name": "Called & No Answer",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "yGjpocFdI8wQrhte",
+          "name": "Foluke-Levi Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE5y13csfXlZpzx",
+          "mode": "list",
+          "cachedResultName": "Free Inspection Booking",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbla2fmK5ZTEYEcuo",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx/tbla2fmK5ZTEYEcuo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Failed",
+            "Summary": "={{ $('bookAppointment').item.json.body.message.analysis.summary }}",
+            "Attempt": "#1",
+            "id": "={{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Address",
+              "displayName": "Property Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Info",
+              "displayName": "Property Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "In-Progress",
+                  "value": "In-Progress"
+                },
+                {
+                  "name": "Failed",
+                  "value": "Failed"
+                },
+                {
+                  "name": "Called",
+                  "value": "Called"
+                },
+                {
+                  "name": "Voicemail",
+                  "value": "Voicemail"
+                },
+                {
+                  "name": "TBC",
+                  "value": "TBC"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Appointment Booked",
+                  "value": "Appointment Booked"
+                },
+                {
+                  "name": "No Appointment",
+                  "value": "No Appointment"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Inspection Date",
+              "displayName": "Inspection Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attempt",
+              "displayName": "Attempt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "#1",
+                  "value": "#1"
+                },
+                {
+                  "name": "#2",
+                  "value": "#2"
+                },
+                {
+                  "name": "#3",
+                  "value": "#3"
+                },
+                {
+                  "name": "Unreachable",
+                  "value": "Unreachable"
+                },
+                {
+                  "name": "#Success",
+                  "value": "#Success"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Hope",
+              "displayName": "Last Hope",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        770,
+        1010
+      ],
+      "id": "3d272500-56e4-4428-8488-d2f120e6999a",
+      "name": "Called & Voicemail",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "yGjpocFdI8wQrhte",
+          "name": "Foluke-Levi Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "### Booking Workflow\nCheck Availability & Create Booking",
+        "height": 120,
+        "width": 220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        340
+      ],
+      "id": "6ae7ca58-4df9-49c8-98e9-3506ab22b9f7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "### Called, But No Answer\nStatus updated to Called.\nSummary uploaded.",
+        "height": 100,
+        "width": 220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        1380
+      ],
+      "id": "e44641cc-78e2-4a48-88fc-dff476f83f7a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "### Successful Call Report\nStatus, Summary & Transcript Updated\n\n",
+        "height": 100
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        820
+      ],
+      "id": "70ed80ee-5157-4674-a4c1-cec51f8e5b33",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "### Called, But Voicemail",
+        "height": 80,
+        "width": 150
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        600,
+        1040
+      ],
+      "id": "05c872c9-2a99-41f5-910e-a44b4cd665be",
+      "name": "Sticky Note3"
+    }
+  ],
