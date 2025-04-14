@@ -947,3 +947,103 @@
                   "typeValidation": "strict",
                   "version": 2
                 },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.message.type }}",
+                    "rightValue": "tool-calls",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5fddf336-4da9-44ef-bd91-f5754c0f4381"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "952cb9c5-0653-45c7-bba0-f61c07275af8",
+                    "leftValue": "={{ $json.body.message.type }}",
+                    "rightValue": "end-of-call-report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8be73fbe-a07e-4381-a169-f6e1d187b2dd",
+                    "leftValue": "={{ $json.body.message.endedReason }}",
+                    "rightValue": "customer-did-not-answer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        220,
+        910
+      ],
+      "id": "26f4aaa3-20e5-4daf-abdd-000fe12ad0b9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n   \"results\": [\n      {\n         \"toolCallId\": \"{{ $('bookAppointment').item.json.body.message.toolCalls[0].id}}\",\n         \"result\": \"{{ $json.output }}\"\n      }\n   ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        360
+      ],
+      "id": "d5d98bc4-815b-4c98-ac79-cff524c17699",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n   \"results\": [\n      {\n         \"toolCallId\": \"{{ $('bookAppointment').item.json.body.message.toolCalls[0].id}}\",\n         \"result\": \"{{ $('Store Availability Result').item.json.Result }}\"\n      }\n   ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2050,
+        660
+      ],
