@@ -1047,3 +1047,544 @@
         2050,
         660
       ],
+      "id": "f3dcd9ad-ed18-44a8-bc04-593c6c007574",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('bookAppointment').item.json.body.message.toolCalls[0].id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1880,
+        480
+      ],
+      "id": "170b7272-9417-4b94-b410-d41fca82bfc1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0baafb44-c3e8-423e-84af-ea0004cb8ecf",
+              "name": "Result",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1210,
+        510
+      ],
+      "id": "c84cc169-fd2a-445a-8f92-d2cd9d87286c",
+      "name": "Store Availability Result"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('bookAppointment').item.json.body.message.toolCalls[0].id }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        780,
+        630
+      ],
+      "id": "7ae61a1e-a27c-48ce-a22e-ab50944c9271",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the transcript --> {{ $json.Transcript }}\n\nThis is the summary --> {{ $json.Summary }}\n\n{{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.id }}\n\nCall Evaluation --> {{ $('bookAppointment').item.json.body.message.analysis.successEvaluation }}",
+        "options": {
+          "systemMessage": "You are a helpful report taking assistant.\n\nUse the ID to match in the Airtable tool.\n\nUse the 'Update Report' tool to update the Summary and Transcript, and Status of the call. ",
+          "returnIntermediateSteps": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1140,
+        820
+      ],
+      "id": "3e198d8b-cd89-4bb6-984c-80d725fe7879",
+      "name": "Report Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1100,
+        1030
+      ],
+      "id": "6a8ae2ef-6665-47d6-9946-32261e18f746",
+      "name": "OpenAI 2",
+      "credentials": {
+        "openAiApi": {
+          "id": "lwnvKDh7b8Veic38",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('bookAppointment').item.json.body.message.call.id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1220,
+        1030
+      ],
+      "id": "dd899639-8346-4fae-8c92-8c4bdf1bbd16",
+      "name": "Memory 2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appE5y13csfXlZpzx",
+          "mode": "list",
+          "cachedResultName": "Free Inspection Booking",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbla2fmK5ZTEYEcuo",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx/tbla2fmK5ZTEYEcuo"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Called",
+            "Summary": "={{ $json.Summary }}",
+            "Transcript": "={{ $json.Transcript }}",
+            "ID": "={{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.id }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Address",
+              "displayName": "Property Address",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Property Info",
+              "displayName": "Property Info",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "In-Progress",
+                  "value": "In-Progress"
+                },
+                {
+                  "name": "Failed",
+                  "value": "Failed"
+                },
+                {
+                  "name": "Called",
+                  "value": "Called"
+                },
+                {
+                  "name": "Voicemail",
+                  "value": "Voicemail"
+                },
+                {
+                  "name": "TBC",
+                  "value": "TBC"
+                },
+                {
+                  "name": "t",
+                  "value": "t"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Outcome",
+              "displayName": "Outcome",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Appointment Booked",
+                  "value": "Appointment Booked"
+                },
+                {
+                  "name": "No Appointment",
+                  "value": "No Appointment"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Inspection Date",
+              "displayName": "Inspection Date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Attempt",
+              "displayName": "Attempt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "#1",
+                  "value": "#1"
+                },
+                {
+                  "name": "#2",
+                  "value": "#2"
+                },
+                {
+                  "name": "#3",
+                  "value": "#3"
+                },
+                {
+                  "name": "Unreachable",
+                  "value": "Unreachable"
+                },
+                {
+                  "name": "#Success",
+                  "value": "#Success"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Last Hope",
+              "displayName": "Last Hope",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        1340,
+        1030
+      ],
+      "id": "e56c076c-f2de-46c0-8132-fa3257fc375e",
+      "name": "Update Report",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "yGjpocFdI8wQrhte",
+          "name": "Foluke-Levi Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98f62b4b-7212-449a-9f28-b76d6432f497",
+              "name": "Transcript",
+              "value": "={{ $('bookAppointment').item.json.body.message.artifact.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "224557ca-70aa-43af-a388-db48f0a1fa9c",
+              "name": "Summary",
+              "value": "={{ $('bookAppointment').item.json.body.message.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "2eb76a22-1d10-4ad5-9657-aefd76cca2ec",
+              "name": "Booking Info",
+              "value": "={{ $json.body.message.analysis.summary }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        770,
+        810
+      ],
+      "id": "71c80791-1f13-436a-bb4b-469efa900d6a",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE5y13csfXlZpzx",
+          "mode": "list",
+          "cachedResultName": "Free Inspection Booking",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbla2fmK5ZTEYEcuo",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx/tbla2fmK5ZTEYEcuo"
+        },
+        "filterByFormula": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Filter_By_Formula', `The Customer name`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1470
+      ],
+      "id": "d5302cf0-773d-4b85-bf20-0b55166fad25",
+      "name": "Get ID",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c439a67-c01e-4269-99db-aed94f9841f5",
+              "name": "toolCall_id",
+              "value": "={{ $('bookAppointment').item.json.body.message.toolCalls[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "ba96831e-94c6-42ca-b42a-b4763159c73f",
+              "name": "Booking Info",
+              "value": "={{ $('bookAppointment').item.json.body.message.toolCalls[0].function.arguments }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        510
+      ],
+      "id": "a00cc724-55c2-4a0a-91d2-933a73b0bb2b",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "02c3776c-fe18-41e1-84af-d285089fa87d",
+              "name": "ID",
+              "value": "={{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2c74c0e7-9ef0-4c43-8228-2d58e5f38ec2",
+              "name": "Name",
+              "value": "={{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.name }}",
+              "type": "string"
+            },
+            {
+              "id": "eb214637-8f66-4491-a3a8-531b08d020bb",
+              "name": "Phone Number",
+              "value": "={{ $('bookAppointment').item.json.body.message.call.assistantOverrides.variableValues.phoneNumber }}",
+              "type": "string"
+            },
+            {
+              "id": "9a53f499-8c58-4c03-bfdb-f56bef400cd4",
+              "name": "Summary",
+              "value": "={{ $('bookAppointment').item.json.body.message.endedReason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        1210
+      ],
+      "id": "64672d09-c6dd-42c4-8481-18ec6fb83c15",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "baad9c0c-a590-46b8-94f0-b2fe277815fc",
+              "leftValue": "={{ $('bookAppointment').item.json.body.message.analysis.successEvaluation }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
