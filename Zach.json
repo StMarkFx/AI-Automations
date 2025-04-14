@@ -348,3 +348,298 @@
               "readOnly": false,
               "removed": true
             },
+            {
+              "id": "Transcript",
+              "displayName": "Transcript",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assignee",
+              "displayName": "Assignee",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Last Hope",
+              "displayName": "Last Hope",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "6d2c8ace-512b-4bfe-b7c0-728e23a93c34",
+      "name": "Update Lead Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "yGjpocFdI8wQrhte",
+          "name": "Foluke-Levi Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "40e6a9b1-70fe-4619-a093-efc067213aeb",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "3524b2651ff1eb066c21a939d88b39b2ea9e82dd09b001011fa1c97ad3ab6dd4@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Inspection Appointments"
+        },
+        "timeMin": "={{ $fromAI('Start_Time', `start time of the booking in ISO 8601 format WITHOUT timezone offset, e.g., 2025-04-12T15:00:00`, 'string') + '-05:00' }}",
+        "timeMax": "={{ $fromAI('End_Time', `end time of the booking in ISO 8601 format WITHOUT timezone offset, e.g., 2025-04-12T16:00:00`, 'string') + '-05:00' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        900,
+        630
+      ],
+      "id": "5ce0011d-16dc-40dd-b0b5-23b59e7de83c",
+      "name": "Availability Tool",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "w6RmgsUVZuLY0TCM",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Booking Info'].Date }} --> This is the requested booking date. ",
+        "options": {
+          "systemMessage": "=The current date is {{ $now }}.\n\nYou are a scheduling assistant. Your job is to check if the user's requested date and time is available using the Availability Tool.\n\n---\n\n🔧 Step 1: Use the **Availability Tool**\n- Call the Availability Tool using the `Start_Time` and `End_Time` values extracted from the user's request.\n- The slot is **assumed to be 1 hour** unless stated otherwise.\n- The tool will return any conflicting calendar events that overlap with the requested time window.\n\n---\n\n📋 Step 2: Interpret the Result\n- If the tool returns **one or more events**, the time is **booked**.\n  - Then, suggest 3 alternative 1-hour time slots on the same day, between 9 AM and 5 PM.\n  - Format your response as:\n    ```\n    Unavailable at requested time. Suggested alternatives: [10:00 AM, 2:00 PM, 3:30 PM]\n    ```\n- If the tool returns **no events**, respond with:\n    ```\n    Available\n    ```\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        692,
+        410
+      ],
+      "id": "3072f032-fdb4-4ae8-b22d-6ec07dcaab29",
+      "name": "Check Availability",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        630
+      ],
+      "id": "759121bc-e23e-4d91-b1c0-d1fc12cdfede",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "lwnvKDh7b8Veic38",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "24f312a6-6332-4af0-b540-46f651a63de4",
+              "leftValue": "={{ $json.Result }}",
+              "rightValue": "Available",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "f6ffff4e-61da-4287-837a-e58a65b834b9",
+              "leftValue": "={{ $json.Result }}",
+              "rightValue": "Output: Available",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1540,
+        510
+      ],
+      "id": "4b4c1cfc-2b3b-4a3d-9ab5-e3ec9662e162",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        480
+      ],
+      "id": "2b3011e3-cddb-4d94-a463-132c229312e7",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "lwnvKDh7b8Veic38",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is the booking info:\n\n{{ $('Edit Fields1').item.json['Booking Info'].ID }}\nRequested Date: {{ $('Edit Fields1').item.json['Booking Info'].Date }}\nCustomer Name: {{ $('Edit Fields1').item.json['Booking Info'].Name }}\nCustomer Address: {{ $('Edit Fields1').item.json['Booking Info'].Address }}",
+        "options": {
+          "systemMessage": "=The current date is: {{ $now }}\n\n---\n\n### 🎯 Task: Handle Customer Booking Request\n\nYou are a scheduling assistant. Complete the steps **in order**, invoking **only one tool per iteration**. Wait for a tool's response **before proceeding to the next step**.\n\n❗ Never invoke the same tool more than once per booking flow.  \n❗ Stop immediately if any tool fails or returns unexpected output.\n\n---\n\n#### 1. Extract Booking Details  \nFrom the user message, extract:\n- Customer’s **Name**  \n- Customer’s **ID** (format: `rec...`)  \n- Requested **Booking Date** (format: \"2025-04-12T15:00:00\")  \n\n---\n\n#### 2. Retrieve Customer Info  \n- Use the **Get Airtable Record** tool  \n- Match using the **Customer ID**  \n- Retrieve:  \n  - Phone Number  \n  - Address  \n\n---\n\n#### 3. Create the Booking (Book Appointment)  \n- Use the **Book Appointment** tool with:\n  - `Start_Time` and `End_Time` from the customer's confirmed time\n  - `Description` and `Summary` as:  \n    ```\n    Free Inspection for [Customer Name] at [Address]\n    ```\n\n✅ Proceed only if the tool returns:  \n  - `\"status\": \"confirmed\"`  \n  - A valid `\"id\"`  \n  - A valid `start.dateTime` value  \n\n✔️ Store values if successful:\n- `Booking_Confirmed = true`  \n- `Confirmed_Time = start.dateTime`\n\n❌ If not, stop and return:  \n```\nError in step 4: Booking failed or incomplete calendar response.\n```\n\n---\n\n#### 4. [Optional] Send SMS Confirmation  \n- If `Booking_Confirmed = true`, use the **Twilio** tool to send:  \n```\nHi, [Customer Name]. Your free roofing inspection with Levi from Priority Roofing has been booked successfully for [Date] [Time]. I look forward to checking in on your roof and ensuring it is well protected for the long term.\n```\n\n✅ If SMS fails or Twilio is disabled, skip and continue.\n\n---\n\n#### 5. Update Airtable Record  \n- Use the **Update Airtable Record** tool  \n- Match using the **Customer ID**  \n- Update:\n  - `Status`: `\"Called\"`  \n  - `Outcome`: `\"Appointment Booked\"`  \n  - `Inspection Date`: `Confirmed_Time` (in ISO 8601 UTC format)  \n  - `Attempt`: `\"#1\"`  \n\n❗ Do not use hardcoded times. Only use the calendar-confirmed time.\n\n---\n\n### ✅ FINAL INSTRUCTION  \nIf all steps succeed, return only:\n```\nI have successfully created the booking for [Customer Name] at [Time] on [Date] for the Free Inspection. Looking forward to seeing you soon!\n```\n\n---\n\n### 🧯 Error Handling  \nIf any tool fails, returns empty, or has missing/invalid data:  \nStop and return:  \n```\nError in step [Step Number]: [Brief Description]\n```\n\nDo not retry any tools unless explicitly instructed.\n",
+          "maxIterations": 5,
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1972,
+        260
+      ],
+      "id": "34307aec-4dae-416f-ad24-3d7e8cc0c64b",
+      "name": "Create Booking",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a9db41e4-847a-41a2-8d72-9ebd88e9924b",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        910
+      ],
+      "id": "1d84c14f-883a-4148-9fd8-f36f90b8c4a1",
+      "name": "bookAppointment",
+      "webhookId": "a9db41e4-847a-41a2-8d72-9ebd88e9924b"
+    },
+    {
+      "parameters": {
+        "from": "+19034855387",
+        "to": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `Customer Phone Number`, 'string') }}",
+        "toWhatsapp": "",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `Hi, [Customer Name]. Your free roofing inspection with Levi from Priority Roofing has been booked successfully for [Date] [Time]. I look forward to checking in on your roof and ensuring it is well protected for the long term.`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilioTool",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        480
+      ],
+      "id": "4adc576c-8794-4482-9cf0-5a161b2aa664",
+      "name": "Twilio",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appE5y13csfXlZpzx",
+          "mode": "list",
+          "cachedResultName": "Free Inspection Booking",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbla2fmK5ZTEYEcuo",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/appE5y13csfXlZpzx/tbla2fmK5ZTEYEcuo"
+        },
+        "filterByFormula": "={{ $fromAI('Filter_By_Customer_ID', `only the 'rec...' part`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        2120,
+        480
+      ],
+      "id": "f1b4fedb-e77a-4070-b472-4bbaa01d7df5",
+      "name": "Get Airtable Record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "yGjpocFdI8wQrhte",
+          "name": "Foluke-Levi Airtable"
+        }
+      }
+    },
