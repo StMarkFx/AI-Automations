@@ -41,3 +41,27 @@
       "id": "633a8f04-57e4-412b-971c-dd0c48497409",
       "name": "Edit Fields"
     },
+    {
+      "parameters": {
+        "sendTo": "hello@storespark.xyz",
+        "subject": "Error in n8n Workflow",
+        "message": "=There's been a {{ $('Edit Fields').item.json.output }} error in the 'Email Uninstalled Stores' n8n workflow.\n\nAttend to it immediately.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "3c4018d0-cbee-45e2-9797-cf61396c33c0",
+      "name": "Gmail",
+      "webhookId": "5e4f6096-df0e-4123-8ef8-4a24e6c6b7bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6ehp4htehf558vg2",
+          "name": "Chima's Gmail"
+        }
+      }
+    }
+  ],
