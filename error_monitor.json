@@ -30,3 +30,14 @@
             }
           ]
         },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "633a8f04-57e4-412b-971c-dd0c48497409",
+      "name": "Edit Fields"
+    },
