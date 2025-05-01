@@ -1,0 +1,24 @@
+{
+  "name": "Error Monitor",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9a17af15-0f31-427f-bed5-2f2469929871",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6efb3608-8016-496f-9a3c-b2db01c1cafa",
+              "name": "Error",
+              "value": "",
+              "type": "string"
+            },
